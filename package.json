@@ -1,11 +1,12 @@
 {
   "name": "types-first-ui",
-  "version": "0.0.0",
-  "description":
-    "An opinionated framework for building long-lived, maintainable UI codebases",
+  "version": "1.0.0",
+  "description": "An opinionated framework for building long-lived, maintainable UI codebases",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "registry": "https://github.com/AveroLLC/types-first-ui"
   },
@@ -26,8 +27,7 @@
     "tsc": "tsc --declaration -outDir dist",
     "clean": "rm -rf dist",
     "prepare": "npm run clean && npm run tsc",
-    "example:simple-counter":
-      "webpack-dev-server --mode development --config example/simple-counter/webpack.config.js"
+    "example:simple-counter": "webpack-dev-server --mode development --config example/simple-counter/webpack.config.js"
   },
   "peerDependencies": {
     "lodash": "^4.17.5",
@@ -67,8 +67,14 @@
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "verbose": true,
-    "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|react-navigation)"],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native|react-navigation)"
+    ],
     "testRegex": "(src|test)/.*\\.test\\.(ts|tsx|js)$",
-    "moduleFileExtensions": ["ts", "tsx", "js"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   }
 }
