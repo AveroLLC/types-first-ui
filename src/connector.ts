@@ -48,11 +48,6 @@ export type ActionCreatorMap<
 > = {
   [K in keyof TBoundActionProps]: UnboundActionCreator<TActions, TBoundActionProps[K]>
 };
-export type ActionCreatorFactory<
-  TActions extends Action,
-  TBoundActionProps extends BoundActionProps<TActions, TBoundActionProps>,
-  TOwnProps
-> = (ownProps?: TOwnProps) => ActionCreatorMap<TActions, TBoundActionProps>;
 
 export type BoundActionProps<TAllActions extends Action, TActionProps> = {
   [K in keyof TActionProps]: BoundActionCreator<TAllActions, any>
@@ -75,9 +70,7 @@ export class Connector<TState extends object, TActions extends Action> {
     observablePropsFactory:
       | ObservableProps<TObservableProps>
       | ObservablePropsFactory<TObservableProps, TOwnProps>,
-    actionCreatorPropsFactory:
-      | ActionCreatorMap<TActions, TBoundActionProps>
-      | ActionCreatorFactory<TActions, TBoundActionProps, TOwnProps>
+    actionCreatorProps: ActionCreatorMap<TActions, TBoundActionProps>
   ) {
     const { _state$, _dispatch } = this;
 
@@ -109,7 +102,8 @@ export class Connector<TState extends object, TActions extends Action> {
           // Issue subscription to observable props
           this.subscribeObservableProps(observableProps);
           // Run ownprops through action creator factory
-          const actionCreators = this.createActionCreatorProps(props);
+          const actionCreators =
+            actionCreatorProps || ({} as ActionCreatorMap<TActions, TBoundActionProps>);
           // Bind action creators to dispatch
           this.bindDispatch(actionCreators);
 
@@ -123,14 +117,10 @@ export class Connector<TState extends object, TActions extends Action> {
           }
           // TODO: refactor to not suck
           const obsIsFactory = _.isFunction(observablePropsFactory);
-          const actionCreatorsIsFactory = _.isFunction(actionCreatorPropsFactory);
           if (obsIsFactory) {
             this.subscribeObservableProps(this.createObservableProps(nextProps));
           }
-          if (actionCreatorsIsFactory) {
-            this.bindDispatch(this.createActionCreatorProps(nextProps));
-          }
-          if (obsIsFactory || actionCreatorsIsFactory) {
+          if (obsIsFactory) {
             return false;
           }
 
@@ -181,16 +171,6 @@ export class Connector<TState extends object, TActions extends Action> {
                 this.setState(nextState);
               }
             });
-        };
-
-        private createActionCreatorProps = (ownProps: TOwnProps) => {
-          if (actionCreatorPropsFactory == null) {
-            return {} as ActionCreatorMap<TActions, TBoundActionProps>;
-          }
-          if (_.isFunction(actionCreatorPropsFactory)) {
-            return actionCreatorPropsFactory(ownProps);
-          }
-          return actionCreatorPropsFactory;
         };
 
         private bindDispatch = (
