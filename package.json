@@ -1,6 +1,6 @@
 {
   "name": "types-first-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An opinionated framework for building long-lived, maintainable UI codebases",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
