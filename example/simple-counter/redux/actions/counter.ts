@@ -1,5 +1,3 @@
-import { ofType } from '../../../../src';
-
 import { delay, mapTo, tap } from 'rxjs/operators';
 import { ActionTypes } from '../interfaces/actions';
 import { action } from '../interfaces/app';
@@ -15,7 +13,6 @@ const addCounterSuccess = action(ActionTypes.COUNTER_ADD_SUCCESS, {
 const addCounterRequest = action(ActionTypes.COUNTER_ADD_REQUEST, {
   epic: action$ => {
     return action$.pipe(
-      ofType(ActionTypes.COUNTER_ADD_REQUEST),
       tap(action => {
         console.log(action);
       }),
