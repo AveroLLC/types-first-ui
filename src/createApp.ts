@@ -15,13 +15,13 @@
  */
 
 import { each, map, mapValues } from 'lodash';
-import { Store, applyMiddleware, createStore } from 'redux';
+import { applyMiddleware, createStore, Store } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import {
   ActionsObservable,
-  Epic as ReduxEpic,
   combineEpics,
   createEpicMiddleware,
+  Epic as ReduxEpic,
 } from 'redux-observable';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { pluck } from 'rxjs/operators';
@@ -34,14 +34,6 @@ import { set } from './utils/set';
 // TODO: check for collisions between state tree and features map?
 export type FeaturesMap<TFeaturesMap> = {
   [K in keyof TFeaturesMap]: App<any, any, any, any, any, any>
-};
-
-// https://stackoverflow.com/questions/47464913/intersection-of-mapped-types
-// Utilities to turn a union type into an intersection type, needed for flattening
-// epic dependencies
-export type GetKeys<U> = U extends Record<infer K, any> ? K : never;
-export type UnionToIntersection<U extends object> = {
-  [K in GetKeys<U>]: U extends Record<K, infer T> ? T : never
 };
 
 // first we need to gather all feature properties from the map (FeaturesMap[keyof FeaturesMap])
@@ -60,9 +52,9 @@ export type FeaturesMapState<T extends FeaturesMap<T>> = {
 export type FeaturesMapActions<T extends FeaturesMap<T>> = T extends null
   ? never
   : { [K in keyof T]: FeatureActions<T[K]> }[keyof T];
-export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = UnionToIntersection<
-  T extends null ? never : { [K in keyof T]: FeatureEpicDependencies<T[K]> }[keyof T]
->;
+export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = {
+  [K in keyof T]: FeatureEpicDependencies<T[K]>
+};
 
 export type CombinedState<
   TState extends object,
@@ -105,7 +97,7 @@ export interface AppCreator<
   TOwnActions extends TAllActions,
   TAllActions extends Action,
   TFeaturesMap extends FeaturesMap<TFeaturesMap> = null,
-  TAllEpicDeps extends object = {}
+  TAllEpicDeps extends object = null
 > {
   createApp: (
     params: CreateAppParams<TOwnState, TAllState, TOwnActions, TAllActions, TAllEpicDeps>
@@ -231,7 +223,7 @@ export class App<
       const featureEpics = map(feature.getEpics(), epic => {
         return (action$, state$: Observable<TAllState>, epicDependencies) => {
           const stateSubTree$ = state$.pipe(pluck(subtreeKey));
-          return epic(action$, stateSubTree$ as any, epicDependencies);
+          return epic(action$, stateSubTree$ as any, epicDependencies[subtreeKey]);
         };
       });
 

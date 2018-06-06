@@ -7,6 +7,6 @@ const app = createApp({
   initialState,
 });
 
-app.createStore({ epicDependencies: {}, dev: true });
+app.createStore({ dev: true });
 
 export default app;

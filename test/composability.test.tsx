@@ -17,14 +17,12 @@
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import * as React from 'react';
+import { of } from 'rxjs';
 import { ActionTypes, makeApp } from './app';
-import { RaceOperator } from 'rxjs/internal/observable/race';
 import { CounterActionTypes } from './lib';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
 
 Enzyme.configure({ adapter: new Adapter() });
-const { shallow, render, mount } = Enzyme;
+const { mount } = Enzyme;
 
 /**
  * Testing plan:
@@ -86,7 +84,9 @@ describe('compasability', () => {
 
     app.createStore({
       epicDependencies: {
-        getValue: () => 7,
+        lib: {
+          getValue: () => 7,
+        },
       },
       dev: false,
     });
