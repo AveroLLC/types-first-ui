@@ -172,12 +172,10 @@ describe('connector', () => {
     let ConnectedComponent;
     let subscribeSpy;
     let unsubscribeSpy;
-    let actionPropsFactorySpy;
 
     beforeEach(() => {
       subscribeSpy = jest.fn();
       unsubscribeSpy = jest.fn();
-      actionPropsFactorySpy = jest.fn();
 
       const observableProp = new Observable(subscriber => {
         subscribeSpy();
@@ -195,21 +193,13 @@ describe('connector', () => {
         counterPlusAmount: PATHS.COUNTER.pipe(map(val => val + (ownProps.amount || 0))),
       });
 
-      const actionPropsFactory = ownProps => {
-        actionPropsFactorySpy();
-        return {
-          increment: app.actionCreator(ActionTypes.INCREMENT),
-          decrement: () => {
-            return app.actionCreator(ActionTypes.DECREMENT)({
-              amount: ownProps.amount,
-            });
-          },
-        };
+      const actionProps = {
+        increment: app.actionCreator(ActionTypes.INCREMENT),
+        decrement: app.actionCreator(ActionTypes.DECREMENT),
       };
-
       ConnectedComponent = app.connect(
         observablePropsFactory,
-        actionPropsFactory
+        actionProps
       )(TestComponent);
     });
 
@@ -302,34 +292,6 @@ describe('connector', () => {
         expect(renderSpy).toHaveBeenCalledTimes(2);
         props = renderSpy.mock.calls[1][0];
         expect(props.counter).toEqual(1);
-      });
-
-      it('should correctly inject own props into action creator factory', () => {
-        mount(<ConnectedComponent amount={7} />);
-
-        expect(renderSpy).toHaveBeenCalledTimes(1);
-        let props = renderSpy.mock.calls[0][0];
-        props.decrement();
-
-        expect(renderSpy).toHaveBeenCalledTimes(2);
-        props = renderSpy.mock.calls[1][0];
-        expect(props.counter).toEqual(-7);
-      });
-
-      it('should re-run the action props factory when ownprops change', () => {
-        const component = mount(<ConnectedComponent />);
-        expect(actionPropsFactorySpy).toHaveBeenCalledTimes(1);
-
-        component.setProps({ amount: 7 });
-        expect(actionPropsFactorySpy).toHaveBeenCalledTimes(2);
-      });
-
-      it('should not re-run the action props factory when other props change', () => {
-        mount(<ConnectedComponent />);
-        expect(actionPropsFactorySpy).toHaveBeenCalledTimes(1);
-
-        app.dispatch(app.actionCreator(ActionTypes.INCREMENT)({ amount: 12 }));
-        expect(actionPropsFactorySpy).toHaveBeenCalledTimes(1);
       });
     });
 
