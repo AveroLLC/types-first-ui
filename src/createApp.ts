@@ -60,9 +60,9 @@ export type FeaturesMapState<T extends FeaturesMap<T>> = {
 export type FeaturesMapActions<T extends FeaturesMap<T>> = T extends null
   ? never
   : { [K in keyof T]: FeatureActions<T[K]> }[keyof T];
-export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = UnionToIntersection<
-  T extends null ? never : { [K in keyof T]: FeatureEpicDependencies<T[K]> }[keyof T]
->;
+export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = {
+  [K in keyof T]: FeatureEpicDependencies<T[K]>
+};
 
 export type CombinedState<
   TState extends object,
@@ -231,7 +231,7 @@ export class App<
       const featureEpics = map(feature.getEpics(), epic => {
         return (action$, state$: Observable<TAllState>, epicDependencies) => {
           const stateSubTree$ = state$.pipe(pluck(subtreeKey));
-          return epic(action$, stateSubTree$ as any, epicDependencies);
+          return epic(action$, stateSubTree$ as any, epicDependencies[subtreeKey]);
         };
       });
 

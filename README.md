@@ -1,3 +1,7 @@
+```
+npm i types-first-ui
+```
+
 # Types-First UI
 
 Types-First UI is an opinionated framework for building long-lived, maintainable UI codebases. It uses TypeScript and the power of its type system to guarantee the completeness and correctness of a Redux backend that can be connected to React components in a performant way. It places the focus on first defining your system in terms of the data and types that will drive it, then filling in the blanks. This project is inspired heavily by [re-frame](https://github.com/Day8/re-frame).

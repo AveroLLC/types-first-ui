@@ -86,7 +86,9 @@ describe('compasability', () => {
 
     app.createStore({
       epicDependencies: {
-        getValue: () => 7,
+        lib: {
+          getValue: () => 7,
+        },
       },
       dev: false,
     });
