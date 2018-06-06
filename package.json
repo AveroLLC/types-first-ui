@@ -7,9 +7,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "registry": "https://github.com/AveroLLC/types-first-ui"
-  },
   "contributors": [
     {
       "name": "Kevin Saldaña",
