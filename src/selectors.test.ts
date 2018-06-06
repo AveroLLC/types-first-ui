@@ -1,3 +1,19 @@
+/*
+   Copyright Avero, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+
 import _ from 'lodash';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take, toArray } from 'rxjs/operators';
@@ -124,7 +140,10 @@ describe('selectors', () => {
         expect(projectFn).toHaveBeenCalledTimes(1);
         let nextState = state;
         // state emits a change to a different part of the state tree
-        nextState = flow(COUNTER.set(1), GREETING.set('heyo'))(nextState);
+        nextState = flow(
+          COUNTER.set(1),
+          GREETING.set('heyo')
+        )(nextState);
         state$.next(nextState);
         expect(projectFn).toHaveBeenCalledTimes(2);
         const [counter, greeting, users] = projectFn.mock.calls[1];
@@ -168,7 +187,12 @@ describe('selectors', () => {
           GREETING,
           (counter, greeting) => counter + greeting.length
         );
-        const emittedValues = s.pipe(take(3), toArray()).toPromise();
+        const emittedValues = s
+          .pipe(
+            take(3),
+            toArray()
+          )
+          .toPromise();
 
         let nextState = state;
         nextState = COUNTER.set(1)(nextState);
@@ -207,7 +231,12 @@ describe('selectors', () => {
 
         const expectations = _.map(tableTest, ({ input, output }) => {
           return expect(
-            (input as Observable<any>).pipe(take(output.length), toArray()).toPromise()
+            (input as Observable<any>)
+              .pipe(
+                take(output.length),
+                toArray()
+              )
+              .toPromise()
           ).resolves.toEqual(output);
         });
 
@@ -231,7 +260,12 @@ describe('selectors', () => {
           (greeting, users) => _.map(users, user => `${greeting}, ${user.name}`),
           { compare: (a, b) => a.length === b.length }
         );
-        const output = s.pipe(take(2), toArray()).toPromise();
+        const output = s
+          .pipe(
+            take(2),
+            toArray()
+          )
+          .toPromise();
         let nextState = state;
         // This will not change the length, so will not emit
         nextState = GREETING.set('hi')(nextState);
