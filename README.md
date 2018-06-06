@@ -21,7 +21,7 @@ More generally, this project might be for you if you believe...
 
 [Redux](https://redux.js.org/) is an event dispatching system that operates on a single global state atom. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
 
-You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) before reading further. Their documentation is [excellent](https://redux.js.org/basics/actions), so we'd strongly encourage reading it.
+You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) before reading further. [Their documentation] is excellent, so we'd strongly encourage reading it.
 
 This project aims to facilitate this "types-first" style of application design while providing utilities focused around maximizing type safety and maintaining interop with existing Redux libraries.
 
@@ -82,7 +82,7 @@ export interface EpicDependencies {
 }
 ```
 
-Our Redux application has little knowledge of the outside world. Its focus is around actions and how those actions affect the state atom. We use [Epics](#markdown-header-epic) as a primitive for side effects, but the logic of those side effects should live behind "Services", which generically encapsulate any API that returns an observable. This is helpful for testing and separation of concerns.
+Our Redux application has little knowledge of the outside world. Its focus is around actions and how those actions affect the state atom. We use [Epics](#epics) as a primitive for side effects, but the logic of those side effects should live behind "Services", which generically encapsulate any API that returns an observable. This is helpful for testing and separation of concerns.
 
 ```typescript
 // 5. Pass our interfaces to createTypesafeRedux
@@ -111,7 +111,7 @@ export const doubleCounter = selector(Paths.counter, counter => {
 });
 ```
 
-Using two of the utility functions above, we now create our [Paths](#markdown-header-path) and [Selectors](#markdown-header-selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
+Using two of the utility functions above, we now create our [Paths](#path) and [Selectors](#selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
 
 Additionally, Paths include utility get & set functions that will be used in your reducers.
 
@@ -173,7 +173,7 @@ export const ActionsMap = {
 ```
 
 This is the primary focus of the developer when creating Redux applications. Given a set of actions and a state tree, we now need to implement the concrete instances of these actions.
-This may include reducers, epics, both, or neither. The return type of `action` is an [ActionImplementation](#markdown-header-ActionImplementation). The exported ActionsMap represents an exhaustive collection of implementations for each action type that we defined in our initial interfaces. It will be passed into our `createApp` function below.
+This may include reducers, epics, both, or neither. The return type of `action` is an [ActionImplementation](#action-implementation). The exported ActionsMap represents an exhaustive collection of implementations for each action type that we defined in our initial interfaces. It will be passed into our `createApp` function below.
 
 ```typescript
 // 8. Create the app instance
@@ -325,7 +325,7 @@ export const Paths = {
 };
 ```
 
-### ActionImplementation
+### Action Implementation
 
 ```typescript
 export interface ActionImplementation<
