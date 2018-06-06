@@ -1,6 +1,6 @@
 # Types-First UI
 
-Types-First UI is an opinionated framework for building long-lived, maintainable UI codebases. It uses typescript and the power of its type system to guarantee the completeness and correctness of redux backend thhat can be connected to React components in a performant way. It places the focus on first defining your system in terms of the data and types that will drive it, then filling in the blanks. This project is inspired heavily by [re-frame](https://github.com/Day8/re-frame).
+Types-First UI is an opinionated framework for building long-lived, maintainable UI codebases. It uses TypeScript and the power of its type system to guarantee the completeness and correctness of a Redux backend that can be connected to React components in a performant way. It places the focus on first defining your system in terms of the data and types that will drive it, then filling in the blanks. This project is inspired heavily by [re-frame](https://github.com/Day8/re-frame).
 
 ## Who is this for?
 
@@ -10,12 +10,12 @@ Hopefully, there are others who can use and benefit from this work directly. But
 
 More generally, this project might be for you if you believe...
 
-* Types are important
-* TypeScript is good
-* Flat state tree -- all reducers have access to the entire tree
-* Actions may have a reducer, an epic, both, or neither. M:N relationship between Actions => Redux primitives
-* Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sags)
-* Observables are pretty dope
+- Types are important
+- TypeScript is good
+- Flat state tree -- all reducers have access to the entire tree
+- Actions may have a reducer, an epic, both, or neither. M:N relationship between Actions => Redux primitives
+- Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sags)
+- Observables are pretty dope
 
 ## **Philosophy**
 
@@ -31,7 +31,7 @@ If you dislike types "getting in your way" or think of them as secondary to your
 
 If you do not care about maintainability of your codebase. If you are writing a todo app or a school project, this may be overkill for you. This framework is designed and optimized for building large, production UI projects that will have a long lifespan and many contributors.
 
-You will occassionally run into cryptic error messages (e.g. key inference on Paths) due to relying heavily on type inference. Deep lookup types + mapped types + conditional types + inference makes the compiler work pretty hard... which leads to the next point.
+You will occasionally run into cryptic error messages (e.g. key inference on Paths) due to relying heavily on type inference. Deep lookup types + mapped types + conditional types + inference makes the compiler work pretty hard... which leads to the next point.
 
 VS Code is a bit sluggish with this right now. You will not receive the instant 10ms feedback you may be used to, so there is a tradeoff here. Hopefully this will improve as the compiler matures around these newer type features. When I tried Webstorm it was not giving me the same level of inference as VS Code (Types-First UI requires TS 2.9+).
 
@@ -70,7 +70,7 @@ export interface Actions {
 export type AppActions = Actions[keyof Actions]; // creates Union type of actions that we will pass in to createTypesafeRedux
 ```
 
-The first thing we want to do is define the interfaces of our application. The entire UI is scoped to the state and action interfaces, so it makes sense to start with them first. Additionally, most maintenance work involves adding or modifying actions, so keeping them in one place is helpful for maintainability. Any changes to these interfaces should propogate down to the rest of the system. When we talk about "unidirectional" types, we are referring to these two interfaces driving downstream functions and utilities.
+The first thing we want to do is define the interfaces of our application. The entire UI is scoped to the state and action interfaces, so it makes sense to start with them first. Additionally, most maintenance work involves adding or modifying actions, so keeping them in one place is helpful for maintainability. Any changes to these interfaces should propagate down to the rest of the system. When we talk about "unidirectional" types, we are referring to these two interfaces driving downstream functions and utilities.
 
 ```typescript
 // 4. Define any Epic Dependencies
@@ -111,7 +111,7 @@ export const doubleCounter = selector(Paths.counter, counter => {
 });
 ```
 
-Using two of the utility functions above, we now create our [Paths](#markdown-header-path) and [Selectors](#markdown-header-selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referencable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
+Using two of the utility functions above, we now create our [Paths](#markdown-header-path) and [Selectors](#markdown-header-selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
 
 Additionally, Paths include utility get & set functions that will be used in your reducers.
 
@@ -147,7 +147,10 @@ const addSuccess = action(ActionTypes.ADD_SUCCESS, {
   reducer: (state, action) => {
     const togglePending = Paths.pendingRequest.set(false);
     const updateCounter = Paths.counter.set(action.payload.newCount);
-    return flow(togglePending, updateCounter)(state);
+    return flow(
+      togglePending,
+      updateCounter
+    )(state);
   },
 });
 
@@ -155,7 +158,10 @@ const addFail = action(ActionTypes.ADD_FAIL, {
   reducer: (state, action) => {
     const togglePending = Paths.pendingRequest.set(false);
     const updateError = Paths.error.set(action.payload.error);
-    return flow(togglePending, updateError)(state);
+    return flow(
+      togglePending,
+      updateError
+    )(state);
   },
 });
 
@@ -189,14 +195,14 @@ app.createStore({
 export default app;
 ```
 
-With our concrete instances we can now create our app instance. This is used to bridge React and Redux--the app exposes a `connect` function that mirrors the Redux variation, except with support for our path and selector primitives. We use an explicit import of the app rather than a `Provider` component using React's context API.
+With our concrete instances, we can now create our app instance. This is used to bridge React and Redux--the app exposes a `connect` function that mirrors the Redux variation, except with support for our path and selector primitives. We use an explicit import of the app rather than a `Provider` component using React's context API.
 
 Types-First UI provides a generic `BoundActionCreator` which is used to define the shape of the `ActionProps` interface we pass to our React components. While the connect function expects action creators, React expects callback functions returning `void`. The `BoundActionCreator` type will allow you to accurately represent this shape.
 
 ```typescript
 import { BoundActionCreator } from 'types-first-ui';
 
-// 10. Connect your react components to the app
+// 10. Connect your React components to the app
 interface DataProps {
   counter: number;
   doubleCounter: number;
@@ -233,14 +239,17 @@ const dispatchProps = {
   addRequest: app.actionCreator(ActionTypes.COUNTER_ADD_REQUEST),
 };
 
-export default app.connect<DataProps, ActionProps>(observableProps, dispatchProps)(App);
+export default app.connect<DataProps, ActionProps>(
+  observableProps,
+  dispatchProps
+)(App);
 ```
 
 ## **Concepts**
 
 ### Selector
 
-A selector is an observable representing some directly derivable value from your state atom. Selectors can be recusively combined to create other selectors. These are conceptually similar to [ngrx](https://github.com/ngrx/platform/blob/master/docs/store/selectors.md) selectors, as well as [reselect](https://github.com/reduxjs/reselect).
+A selector is an observable representing some directly derivable value from your state atom. Selectors can be recursively combined to create other selectors. These are conceptually similar to [ngrx](https://github.com/ngrx/platform/blob/master/docs/store/selectors.md) selectors, as well as [reselect](https://github.com/reduxjs/reselect).
 
 Selectors are closed over an observable of the state tree, and include a number of performance optimizations to guarantee that they will be shared, they will not leak subscriptions, they will emit at most once per change to the state tree, and they will only evaluate their projector function when their input values change. Selectors may optionally provide a comparator function to determine when new values should be emitted, for further performance optimizations. This is useful for selectors that return values which are not referentially equal (i.e. mapping over an array).
 
@@ -284,7 +293,7 @@ export declare type Path<TState extends object, TVal> = Selector<TVal> &
   PathAPI<TState, TVal>;
 ```
 
-A path is a selector with special properties and contraints. Paths represent observables of some subtree of your state atom. A path is constructed by providing the literal path to a subtree of your state interface. It will emit whenever that piece of the state tree has changed (i.e. it is no longer referentially equal to its previous value). Paths are the primitive from which we compute other derived values, through selectors. For every subtree of your state tree, there should be a corresponding Paths object.
+A path is a selector with special properties and constraints. Paths represent observables of some subtree of your state atom. A path is constructed by providing the literal path to a subtree of your state interface. It will emit whenever that piece of the state tree has changed (i.e. it is no longer referentially equal to its previous value). Paths are the primitive from which we compute other derived values, through selectors. For every subtree of your state tree, there should be a corresponding Paths object.
 
 Because paths are bound directly to a piece of the state tree, they also include typesafe, non-mutating get and set functions which are used in our reducers.
 
@@ -332,13 +341,13 @@ export interface ActionImplementation<
 }
 ```
 
-This interface represents the "implementation" of a single action described in the system. It is the return type of the `action` function provided the framework. This provides strict type safety around your Redux primitives, as well as providing a useful grouping of tightly related code. The community has referred to this pattern as the [ducks](https://github.com/erikras/ducks-modular-redux) pattern. Action implementations are where we combine our typesafe utilities into meaningiful business logic that will drive the functionality of our application.
+This interface represents the "implementation" of a single action described in the system. It is the return type of the `action` function provided the framework. This provides strict type safety around your Redux primitives, as well as providing a useful grouping of tightly related code. The community has referred to this pattern as the [ducks](https://github.com/erikras/ducks-modular-redux) pattern. Action implementations are where we combine our typesafe utilities into meaningful business logic that will drive the functionality of our application.
 
 Actions are implemented using the `action` utility function. When implementing an action you may provide a reducer or an epic for that action; you must exhaustively implement every action defined in your action types before you will be able to create an app instance.
 
 ```typescript
-// the return value of the action utility is the full action implemention, including
-// a typesafe creator function and refernce to the type constant
+// the return value of the action utility is the full action implementation including
+// a typesafe creator function and reference to the type constant
 const addRequest = action(ActionTypes.ADD_REQUEST, {
   // reducers receive the full, flat state tree
   // type of action object is correctly inferred
@@ -432,7 +441,10 @@ import { empty } from 'rxjs';
 import { tap, mergeMapTo } from 'rxjs/operators';
 
 const logEverything: Middleware<AppActions, State, EpicDependencies> = actions$ => {
-  return actions$.pipe(tap(console.log), mergeMapTo(empty()));
+  return actions$.pipe(
+    tap(console.log),
+    mergeMapTo(empty())
+  );
 };
 ```
 
@@ -442,7 +454,7 @@ App is the atomic unit of functionality in Types-First UI. Apps are recursively 
 
 ## Foundational Technologies
 
-* [TypeScript](https://github.com/Microsoft/TypeScript)
-* [Redux](https://github.com/reactjs/redux)
-* [RxJS](https://github.com/ReactiveX/rxjs)
-* [Redux-Observable](https://redux-observable.js.org/)
+- [TypeScript](https://github.com/Microsoft/TypeScript)
+- [Redux](https://github.com/reactjs/redux)
+- [RxJS](https://github.com/ReactiveX/rxjs)
+- [Redux-Observable](https://redux-observable.js.org/)
