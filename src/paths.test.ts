@@ -1,3 +1,19 @@
+/*
+   Copyright Avero, LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
+
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take, tap, toArray } from 'rxjs/operators';
 import createPathFactory from './paths';
@@ -128,7 +144,10 @@ describe('paths', () => {
       });
 
       it('should emit the value of the path each time it changes', () => {
-        const emittedValues = COUNTER.pipe(take(3), toArray()).toPromise();
+        const emittedValues = COUNTER.pipe(
+          take(3),
+          toArray()
+        ).toPromise();
         let nextState = state;
         nextState = COUNTER.set(1)(nextState);
         state$.next(nextState);
@@ -138,7 +157,10 @@ describe('paths', () => {
       });
 
       it('should not emit if another part of the state tree changes', () => {
-        const emittedValues = COUNTER.pipe(take(3), toArray()).toPromise();
+        const emittedValues = COUNTER.pipe(
+          take(3),
+          toArray()
+        ).toPromise();
         let nextState = state;
         nextState = COUNTER.set(1)(nextState);
         state$.next(nextState);
@@ -172,7 +194,10 @@ describe('paths', () => {
       });
 
       it('should not emit if the assigned value changes but the result value is the same', () => {
-        const emittedValues = COUNTER.pipe(take(3), toArray()).toPromise();
+        const emittedValues = COUNTER.pipe(
+          take(3),
+          toArray()
+        ).toPromise();
         let nextState = state;
         // Each of the next 3 sets should result in a return value of 10, so just 1 emit:
         nextState = COUNTER.set(null)(nextState);
