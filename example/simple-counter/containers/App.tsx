@@ -1,5 +1,4 @@
 import * as React from 'react';
-import actionImplementations from '../redux/actions/index';
 import app from '../redux/connector';
 import { ActionTypes, AppActions } from '../redux/interfaces/actions';
 import { Paths } from '../redux/paths';
@@ -45,4 +44,7 @@ const dispatchProps = {
   subtract: app.actionCreator(ActionTypes.COUNTER_SUBTRACT),
 };
 
-export default app.connect<DataProps, ActionProps>(observableProps, dispatchProps)(App);
+export default app.connect<DataProps, ActionProps>(
+  observableProps,
+  dispatchProps
+)(App);
