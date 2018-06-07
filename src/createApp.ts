@@ -292,7 +292,10 @@ export class App<
       ? composeWithDevTools(applyMiddleware(epicMiddleware))
       : applyMiddleware(epicMiddleware);
 
-    const store = createStore<TAllState>(rootReducer, reduxMiddleware);
+    const store = createStore<TAllState, TAllActions, {}, {}>(
+      rootReducer,
+      reduxMiddleware
+    );
 
     epicMiddleware.run(rootEpic);
     let currentState = store.getState();
