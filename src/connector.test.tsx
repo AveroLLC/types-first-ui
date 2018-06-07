@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import Enzyme from 'enzyme';
+import * as Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import * as React from 'react';
 import { Observable } from 'rxjs';
