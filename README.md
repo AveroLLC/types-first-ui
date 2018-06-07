@@ -23,9 +23,9 @@ More generally, this project might be for you if you believe...
 
 ## **Philosophy**
 
-[Redux](https://redux.js.org/) is an event dispatching system that operates on a single global state atom. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
+Redux is an event dispatching system that operates on a single global state atom. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
 
-You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) before reading further. [Their documentation] is excellent, so we'd strongly encourage reading it.
+You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) before reading further. [Their documentation](https://redux.js.org/) is excellent, so we'd strongly encourage reading it.
 
 This project aims to facilitate this "types-first" style of application design while providing utilities focused around maximizing type safety and maintaining interop with existing Redux libraries.
 
@@ -33,7 +33,7 @@ This project aims to facilitate this "types-first" style of application design w
 
 If you dislike types "getting in your way" or think of them as secondary to your application, then this is not the framework for you. At Avero we believe in starting with your API first, which in this case is the interfaces of your application.
 
-If you do not care about maintainability of your codebase. If you are writing a todo app or a school project, this may be overkill for you. This framework is designed and optimized for building large, production UI projects that will have a long lifespan and many contributors.
+If you do not care about the long-term maintainability of your codebase, such as writing a todo app or a school project, this may be overkill for you. This framework is designed and optimized for building large, production UI projects that will have a long lifespan and many contributors.
 
 You will occasionally run into cryptic error messages (e.g. key inference on Paths) due to relying heavily on type inference. Deep lookup types + mapped types + conditional types + inference makes the compiler work pretty hard... which leads to the next point.
 
