@@ -27,13 +27,12 @@
     "example:simple-counter": "webpack-dev-server --mode development --config example/simple-counter/webpack.config.js"
   },
   "peerDependencies": {
-    "lodash": "^4.17.5",
     "react": "^16.0.0",
     "redux": "^3.7.2",
     "rxjs": "^6.0.0"
   },
   "dependencies": {
-    "redux": "^3.7.2",
+    "lodash": "^4.17.5",
     "redux-devtools-extension": "^2.13.2",
     "redux-observable": "^1.0.0-beta.1"
   },
@@ -49,6 +48,7 @@
     "jest": "^22.4.4",
     "lodash": "^4.17.5",
     "react": "^16.3.2",
+    "redux": "^3.7.2",
     "react-dom": "^16.4.0",
     "rxjs": "^6.0.0",
     "ts-jest": "^22.4.6",
