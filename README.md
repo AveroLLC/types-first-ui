@@ -284,6 +284,10 @@ export const completedTodos = selector(Paths.TODOS, todos => {
   });
 });
 // completedTodos is type Observable<[todoId: string]: Todo>
+
+// selectors may also be parameterized
+// Here is an example that returns a selector curried over a parameter
+export const todoById = (id: string) => selector(Paths.TODOS, todos => todos[id]);
 ```
 
 ### Path
@@ -320,10 +324,6 @@ export const Paths = {
   // Paths.COUNTER is type Observable<number> & { get: (State) => number, set: (number) => StateTransform<State> }
   USERNAME: path(['app', 'username'], ''),
   // Paths.USERNAME is type Observable<string> & { get: (State) => string, set: (string) => StateTransform<State> }
-
-  // Works with "parameterized" selectors
-  COUNTER_BY_ID: (counterId: string) => path(['app', 'counterById', counterId]),
-  // Paths.COUNTER_BY_ID is type (counterId: string) => { get: (State) => number, set: (number) => StateTransform<State>, selector$: Observable<number> },
   BAD: path(['app', 'badPath']),
   // ERROR: argument of 'badPath' is not assignable to 'counter' | 'username'
 };
