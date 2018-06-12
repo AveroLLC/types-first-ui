@@ -58,16 +58,5 @@ export type AllActionsEpic<
   TEpicDependencies extends object
 > = Epic<TAllActions, TAllActions, TEpicDependencies>;
 
-// Eventually should be moved to async package
-export interface IError<T extends Action> {
-  message: string;
-  id: string;
-  timeout?: number;
-  action?: T & { meta: { errorId: IError<T>['id'] } };
-  buttonText?: string;
-  topic: T['type'];
-}
-export type ErrorCreator<T extends Action> = (action: T, err: any) => IError<T>;
-
 // Utility - infers the type of the first argument of a function
 export type Arg0<T> = T extends (args0: infer R, ...any: any[]) => any ? R : never;
