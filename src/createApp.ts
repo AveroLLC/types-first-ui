@@ -214,7 +214,8 @@ export class App<
       epics = epics.concat((allActions$, state$, deps) => {
         return actionImpl.epic(
           allActions$.ofType(actionImpl.constant) as ActionsObservable<any>,
-          deps
+          deps,
+          allActions$
         );
       });
     });
