@@ -18,7 +18,7 @@ More generally, this project might be for you if you believe...
 - TypeScript is good
 - Flat state tree -- all reducers have access to the entire tree
 - Actions may have a reducer, an epic, both, or neither. M:N relationship between Actions => Redux primitives
-- Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sags)
+- Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sagas)
 - Observables are pretty dope
 
 ## **Philosophy**
@@ -401,7 +401,7 @@ export declare type Epic<
 
 #### Single-Action Epic
 
-Single-action epics are provided as part of an action implementation. They are scoped to the specific action being implemented, and do not have access to the stream of all actions emitted from the system. As a user, this means you do not have to use the `ofType()` operator within your action epics to narrow the action stream. This also guarantees that action implementations do not bleed concerns.
+Single-action epics are provided as part of an action implementation. They are scoped to the specific action being implemented, and only have access to the stream of all actions emitted from the system as the third parameter. As a user, this means you do not have to use the `ofType()` operator within your action epics to narrow the action stream. This also guarantees that action implementations do not bleed concerns. Although most single action epics won't care about the allActions stream, it is useful for use cases such as cancellation.
 
 ```typescript
 export declare type SingleActionEpic<
@@ -431,14 +431,14 @@ const addRequest = action(ActionTypes.ADD_REQUEST, {
 
 Not to be confused with [Redux middleware](https://redux.js.org/advanced/middleware), this represents a particular type of "Epic"--one that never returns new actions. This is a good place to put "side effects" in your application (logging, tracing, setting context/storage, persistence, etc).
 
-For example, in the FCM Mobile app we have:
-
 ```typescript
 export declare type MiddlewareEpic<
   TAllActions extends Action,
   TEpicDependencies extends object
 > = Epic<TAllActions, never, TEpicDependencies>;
 ```
+
+For example, we could have:
 
 ```typescript
 import { empty } from 'rxjs';

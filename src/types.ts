@@ -42,12 +42,6 @@ export type Epic<
   deps: TEpicDependencies
 ) => Observable<TReturnedAction>;
 
-export type SingleActionEpic<
-  TAllActions extends Action,
-  TAction extends TAllActions,
-  TEpicDependencies extends object
-> = Epic<TAction, TAllActions, TEpicDependencies>;
-
 export type MiddlewareEpic<
   TAllActions extends Action,
   TEpicDependencies extends object
@@ -57,6 +51,16 @@ export type AllActionsEpic<
   TAllActions extends Action,
   TEpicDependencies extends object
 > = Epic<TAllActions, TAllActions, TEpicDependencies>;
+
+export type SingleActionEpic<
+  TAllActions extends Action,
+  TAction extends TAllActions,
+  TEpicDependencies extends object
+> = (
+  action$: Observable<TAction>,
+  deps: TEpicDependencies,
+  allActions$: Observable<TAllActions>
+) => Observable<TAllActions>;
 
 // Utility - infers the type of the first argument of a function
 export type Arg0<T> = T extends (args0: infer R, ...any: any[]) => any ? R : never;
