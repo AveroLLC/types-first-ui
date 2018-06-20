@@ -21,7 +21,7 @@ More generally, this project might be for you if you believe...
 - Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sagas)
 - Observables are pretty dope
 
-## **Philosophy**
+## Philosophy
 
 Redux is an event dispatching system that operates on a single global state atom that is only modifiable via actions. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
 
