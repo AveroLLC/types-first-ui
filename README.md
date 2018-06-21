@@ -23,9 +23,9 @@ More generally, this project might be for you if you believe...
 
 ## **Philosophy**
 
-Redux is an event dispatching system that operates on a single global state atom. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
+Redux is an event dispatching system that operates on a single global state atom that is only modifiable via actions. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
 
-You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) before reading further. [Their documentation](https://redux.js.org/) is excellent, so we'd strongly encourage reading it.
+You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) and RxJS (Observables, Epics) before reading further. The documentation for [Redux](https://redux.js.org/) and [Epics](https://redux-observable.js.org/docs/basics/Epics.html) are excellent, so we'd strongly encourage reading it.
 
 This project aims to facilitate this "types-first" style of application design while providing utilities focused around maximizing type safety and maintaining interop with existing Redux libraries.
 
@@ -74,7 +74,7 @@ export interface Actions {
 export type AppActions = Actions[keyof Actions]; // creates Union type of actions that we will pass in to createTypesafeRedux
 ```
 
-The first thing we want to do is define the interfaces of our application. The entire UI is scoped to the state and action interfaces, so it makes sense to start with them first. Additionally, most maintenance work involves adding or modifying actions, so keeping them in one place is helpful for maintainability. Any changes to these interfaces should propagate down to the rest of the system. When we talk about "unidirectional" types, we are referring to these two interfaces driving downstream functions and utilities.
+The first thing we want to do is define the interfaces of our application. The entire UI depends on state and action interfaces, so it makes sense to start with them first. Additionally, most maintenance work involves adding or modifying actions, so keeping them in one place is helpful for maintainability. Any changes to these interfaces should propagate down to the rest of the system. When we talk about "unidirectional" types, we are referring to these two interfaces driving downstream functions and utilities.
 
 ```typescript
 // 4. Define any Epic Dependencies
@@ -99,30 +99,30 @@ export const { path, selector, action, createApp } = createTypesafeRedux<
 >();
 ```
 
-We use these interfaces to drive our typesafe "utility" functions. These are the functions you will use to build your Redux application. Any changes to the interfaces described above should be immediately reflected in these function signatures.
+Now we can use these interfaces to drive our typesafe "utility" functions. These are the functions you will use to build your Redux application. Any changes to the interfaces described above will be immediately reflected in these function signatures.
 
 ```typescript
-// 6a. Create paths
+// 6a. Create paths using the 'path' utility function from createTypesafeRedux
 export const Paths = {
   counter: path(['counter'], 0),
   error: path(['error'], ''),
   pendingRequest: path(['pendingRequest']),
 };
 
-// 6b. Create selectors
+// 6b. Create selectors using 'selector' util function from createTypesafeRedux
 export const doubleCounter = selector(Paths.counter, counter => {
   return counter * 2;
 });
 ```
 
-Using two of the utility functions above, we now create our [Paths](#path) and [Selectors](#selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
+We now use the utility functions from `createTypesafeRedux` to create our [Paths](#path) and [Selectors](#selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
 
 Additionally, Paths include utility get & set functions that will be used in your reducers.
 
 ```typescript
 import { flow } from 'types-first-ui';
 
-// 7. Implement Actions
+// 7. Implement Actions: use 'action' util function from createTypesafeRedux
 const addRequest = action(ActionTypes.ADD_REQUEST, {
   reducer: (state, action) => {
     // action inferred as {type: ActionTypes.ADD_REQUEST, payload: {tryAdd: number} }
@@ -206,7 +206,7 @@ Types-First UI provides a generic `BoundActionCreator` which is used to define t
 ```typescript
 import { BoundActionCreator } from 'types-first-ui';
 
-// 10. Connect your React components to the app
+// 10. Define a React component with Types-First framework 
 interface DataProps {
   counter: number;
   doubleCounter: number;
@@ -218,7 +218,7 @@ interface ActionProps {
 
 type Props = DataProps & ActionProps;
 
-export class App extends React.PureComponent<Props> {
+export class CounterComponent extends React.PureComponent<Props> {
   add = () => {
     this.props.addRequest({ tryAddBy: 1 });
   };
@@ -234,6 +234,7 @@ export class App extends React.PureComponent<Props> {
   }
 }
 
+// 11. Connect your React component to the TFUI app
 const observableProps = {
   counter: Paths.COUNTER,
   doubleCounter: Selectors.doubleCounter,
@@ -246,7 +247,7 @@ const dispatchProps = {
 export default app.connect<DataProps, ActionProps>(
   observableProps,
   dispatchProps
-)(App);
+)(CounterComponent);
 ```
 
 ## **Concepts**
