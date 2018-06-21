@@ -41,6 +41,11 @@ VS Code is a bit sluggish with this right now. You will not receive the instant 
 
 ## Usage
 
+Here's a diagram showing the following usage steps. Click to embiggen.
+
+<a href="usage-diagram-lg.png"><img src="usage-diagram-sm.png" /></a>
+
+
 Let's create a Redux counter application with Types-First UI. We will include basic pending/error handling and a mock API call to show slightly more complexity than the normal counter app.
 
 ```typescript
