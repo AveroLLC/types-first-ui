@@ -21,11 +21,11 @@ More generally, this project might be for you if you believe...
 - Epics (backed by redux-observable) as mechanism for side effects/middleware (vs. thunks or sagas)
 - Observables are pretty dope
 
-## Philosophy
+## **Philosophy**
 
 Redux is an event dispatching system that operates on a single global state atom that is only modifiable via actions. It makes little sense to begin building your application before defining two interfaces: the shape of your state and the shape of all actions that operate on that state. From there we can leverage the strict unidirectional flow of Redux in our type system.
 
-You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) and RxJS (Observables, Epics) before reading further. The documentation for [Redux](https://redux.js.org/) and [RxJS](https://rxjs-dev.firebaseapp.com/guide/overview) is excellent, so we'd strongly encourage reading it.
+You should be familiar with the basic terminology of Redux (Actions, Reducers, Action Creators, Stores, Middleware) and RxJS (Observables, Epics) before reading further. The documentation for [Redux](https://redux.js.org/) and [Epics](https://redux-observable.js.org/docs/basics/Epics.html) are excellent, so we'd strongly encourage reading it.
 
 This project aims to facilitate this "types-first" style of application design while providing utilities focused around maximizing type safety and maintaining interop with existing Redux libraries.
 
@@ -122,7 +122,7 @@ Additionally, Paths include utility get & set functions that will be used in you
 ```typescript
 import { flow } from 'types-first-ui';
 
-// 7. Implement Actions // using 'action' util function from createTypesafeRedux
+// 7. Implement Actions: use 'action' util function from createTypesafeRedux
 const addRequest = action(ActionTypes.ADD_REQUEST, {
   reducer: (state, action) => {
     // action inferred as {type: ActionTypes.ADD_REQUEST, payload: {tryAdd: number} }
@@ -218,7 +218,7 @@ interface ActionProps {
 
 type Props = DataProps & ActionProps;
 
-export class MyThing extends React.PureComponent<Props> {
+export class CounterComponent extends React.PureComponent<Props> {
   add = () => {
     this.props.addRequest({ tryAddBy: 1 });
   };
@@ -247,7 +247,7 @@ const dispatchProps = {
 export default app.connect<DataProps, ActionProps>(
   observableProps,
   dispatchProps
-)(MyThing);
+)(CounterComponent);
 ```
 
 ## **Concepts**
