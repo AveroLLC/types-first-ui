@@ -21,9 +21,10 @@
   ],
   "scripts": {
     "test": "jest",
-    "tsc": "tsc --declaration -outDir dist",
-    "clean": "rm -rf dist",
-    "prepare": "npm run clean && npm run tsc",
+    "tsc": "tsc --declaration -outDir compiled",
+    "clean": "rm -rf dist && rm -rf compiled",
+    "copyDeclarations": "cd compiled && find . -name '*.d.ts' | cpio -pdm  ../dist",
+    "prepare": "npm run clean && npm run tsc && rollup -c && npm run copyDeclarations",
     "example:simple-counter": "webpack-dev-server --mode development --config example/simple-counter/webpack.config.js"
   },
   "peerDependencies": {
@@ -34,14 +35,20 @@
   "dependencies": {
     "lodash": "^4.17.5",
     "redux-devtools-extension": "^2.13.2",
-    "redux-observable": "^1.0.0-beta.1"
+    "redux-observable": "^1.0.0-beta.1",
+    "rollup-plugin-node-resolve": "^3.3.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
     "@types/enzyme": "^3.1.10",
     "@types/jest": "^22.2.3",
     "@types/lodash": "^4.14.106",
     "@types/react": "^16.3.13",
     "@types/reduce-reducers": "^0.1.3",
+    "babel-plugin-lodash": "^3.3.4",
+    "babel-preset-env": "^1.7.0",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
     "html-webpack-plugin": "^3.2.0",
@@ -50,6 +57,8 @@
     "react": "^16.3.2",
     "react-dom": "^16.4.0",
     "redux": "^4.0.0",
+    "rollup-plugin-babel": "^4.0.0-beta.5",
+    "rollup-plugin-commonjs": "^9.1.3",
     "rxjs": "^6.0.0",
     "ts-jest": "^22.4.6",
     "ts-loader": "^4.2.0",

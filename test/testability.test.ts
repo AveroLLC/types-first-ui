@@ -15,7 +15,7 @@
  */
 
 import { makeApp, AppState } from './app';
-import _ from 'lodash';
+import { noop } from 'lodash';
 import { take, toArray } from 'rxjs/operators';
 import { CounterActionTypes } from './lib';
 import { of } from 'rxjs';
@@ -29,10 +29,10 @@ const initialState = {
 };
 
 describe('app testability', () => {
-  let { state$, NUMBERS, NAME, SUM, setName, addNumber, removeNumber } = makeApp(_.noop);
+  let { state$, NUMBERS, NAME, SUM, setName, addNumber, removeNumber } = makeApp(noop);
 
   beforeEach(() => {
-    const a = makeApp(_.noop);
+    const a = makeApp(noop);
 
     state$ = a.state$;
     NUMBERS = a.NUMBERS;

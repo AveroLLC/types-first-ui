@@ -92,5 +92,6 @@ export function flow<T extends object>(
 ): (state: T) => T;
 
 export function flow<T extends object>(...args: any[]): (state: T) => T {
+  // @ts-ignore lodash flow typings :(
   return fpFlow(...args);
 }

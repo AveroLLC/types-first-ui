@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import _ from 'lodash';
+import { map } from 'lodash';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take, toArray } from 'rxjs/operators';
 import createPathFactory from './paths';
@@ -229,7 +229,7 @@ describe('selectors', () => {
           },
         ];
 
-        const expectations = _.map(tableTest, ({ input, output }) => {
+        const expectations = map(tableTest, ({ input, output }) => {
           return expect(
             (input as Observable<any>)
               .pipe(
@@ -257,7 +257,7 @@ describe('selectors', () => {
         const s = selector(
           GREETING,
           USERS,
-          (greeting, users) => _.map(users, user => `${greeting}, ${user.name}`),
+          (greeting, users) => map(users, user => `${greeting}, ${user.name}`),
           { compare: (a, b) => a.length === b.length }
         );
         const output = s
