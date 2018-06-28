@@ -2,7 +2,7 @@
   "name": "types-first-ui",
   "version": "1.1.0",
   "description": "An opinionated framework for building long-lived, maintainable UI codebases",
-  "main": "./dist/index.js",
+  "main": "./dist/bundle.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -21,20 +21,21 @@
   ],
   "scripts": {
     "test": "jest",
-    "tsc": "tsc --declaration -outDir dist",
-    "clean": "rm -rf dist",
-    "prepare": "npm run clean && npm run tsc",
+    "tsc": "tsc --declaration -outDir compiled",
+    "clean": "rm -rf dist && rm -rf compiled",
+    "copyDeclarations": "cd compiled && find . -name '*.d.ts' | cpio -pdm  ../dist",
+    "prepare": "npm run clean && npm run tsc && rollup -c && npm run copyDeclarations",
     "example:simple-counter": "webpack-dev-server --mode development --config example/simple-counter/webpack.config.js"
   },
   "peerDependencies": {
     "react": "^16.0.0",
-    "redux": "^4.0.0",
     "rxjs": "^6.0.0"
   },
   "dependencies": {
-    "lodash": "^4.17.5",
-    "redux-devtools-extension": "^2.13.2",
-    "redux-observable": "^1.0.0-beta.1"
+    "lodash": "^4.0.0",
+    "redux-devtools-extension": "^2.0.0",
+    "redux": "^4.0.0",
+    "redux-observable": "^1.0.0"
   },
   "devDependencies": {
     "@types/enzyme": "^3.1.10",
@@ -50,6 +51,7 @@
     "react": "^16.3.2",
     "react-dom": "^16.4.0",
     "redux": "^4.0.0",
+    "rollup-plugin-uglify": "^4.0.0",
     "rxjs": "^6.0.0",
     "ts-jest": "^22.4.6",
     "ts-loader": "^4.2.0",

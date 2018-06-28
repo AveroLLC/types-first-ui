@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import * as _ from 'lodash';
+import { isFunction, mapValues } from 'lodash';
 import * as React from 'react';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, sample } from 'rxjs/operators';
@@ -116,7 +116,7 @@ export class Connector<TState extends object, TActions extends Action> {
             return true;
           }
           // TODO: refactor to not suck
-          const obsIsFactory = _.isFunction(observablePropsFactory);
+          const obsIsFactory = isFunction(observablePropsFactory);
           if (obsIsFactory) {
             this.subscribeObservableProps(this.createObservableProps(nextProps));
           }
@@ -141,7 +141,7 @@ export class Connector<TState extends object, TActions extends Action> {
           if (observablePropsFactory == null) {
             return {} as ObservableProps<TObservableProps>;
           }
-          if (_.isFunction(observablePropsFactory)) {
+          if (isFunction(observablePropsFactory)) {
             return observablePropsFactory(ownProps);
           }
           return observablePropsFactory;
@@ -176,7 +176,7 @@ export class Connector<TState extends object, TActions extends Action> {
         private bindDispatch = (
           actionCreators: ActionCreatorMap<TActions, TBoundActionProps>
         ) => {
-          const boundCreators = _.mapValues<ActionCreator<any>, (payload) => void>(
+          const boundCreators = mapValues<ActionCreator<any>, (payload) => void>(
             actionCreators,
             actionCreator => {
               return payload => _dispatch(actionCreator(payload));
