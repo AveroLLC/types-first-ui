@@ -41,7 +41,7 @@ export enum ActionTypes {
   REMOVE_NUMBER = 'REMOVE_NUMBER',
 }
 
-interface Actions {
+export interface Actions {
   [ActionTypes.SET_NAME]: {
     type: ActionTypes.SET_NAME;
     payload: {

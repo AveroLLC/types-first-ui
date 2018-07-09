@@ -36,22 +36,10 @@ export type ObservablePropsFactory<TObservableProps extends object, TOwnProps> =
   ownProps?: TOwnProps
 ) => ObservableProps<TObservableProps>;
 
-export type UnboundActionCreator<
-  TAllActions extends Action,
-  TBoundCreator extends BoundActionCreator<TAllActions, any>
-> = TBoundCreator extends BoundActionCreator<TAllActions, infer ActionType>
-  ? ActionCreator<Extract<TAllActions, { type: ActionType }>>
-  : never;
-export type ActionCreatorMap<
-  TActions extends Action,
-  TBoundActionProps extends BoundActionProps<TActions, TBoundActionProps>
-> = {
-  [K in keyof TBoundActionProps]: UnboundActionCreator<TActions, TBoundActionProps[K]>
-};
-
-export type BoundActionProps<TAllActions extends Action, TActionProps> = {
-  [K in keyof TActionProps]: BoundActionCreator<TAllActions, any>
-};
+export type ActionCreatorsMap<TAllActions extends Action, TActionProps> = Record<
+  keyof TActionProps,
+  (...args: any[]) => TAllActions
+>;
 
 export class Connector<TState extends object, TActions extends Action> {
   private _state$: Observable<TState>;
@@ -64,20 +52,20 @@ export class Connector<TState extends object, TActions extends Action> {
 
   connect<
     TObservableProps extends object,
-    TBoundActionProps extends BoundActionProps<TActions, TBoundActionProps> = null,
+    TActionProps extends ActionCreatorsMap<TActions, TActionProps> = null,
     TOwnProps = null
   >(
     observablePropsFactory:
       | ObservableProps<TObservableProps>
       | ObservablePropsFactory<TObservableProps, TOwnProps>,
-    actionCreatorProps: ActionCreatorMap<TActions, TBoundActionProps>
+    actionCreatorProps: TActionProps
   ) {
     const { _state$, _dispatch } = this;
 
     return (
-      component: React.ComponentClass<TObservableProps & TBoundActionProps & TOwnProps>
+      component: React.ComponentClass<TObservableProps & TActionProps & TOwnProps>
     ): React.ComponentClass<TOwnProps> => {
-      type ComponentState = TObservableProps & TBoundActionProps;
+      type ComponentState = TObservableProps & TActionProps;
 
       return class ConnectedComponent extends React.Component<TOwnProps, ComponentState> {
         // dispatchProps and observablePropValues are passed to render the wrapped component
@@ -88,9 +76,6 @@ export class Connector<TState extends object, TActions extends Action> {
 
         // flag to determine if state should be set through assignment or setState
         private _isConstructor = true;
-
-        // private isRenderQueued = true;
-        // private renderTimeout = null;
 
         constructor(props) {
           super(props);
@@ -103,7 +88,7 @@ export class Connector<TState extends object, TActions extends Action> {
           this.subscribeObservableProps(observableProps);
           // Run ownprops through action creator factory
           const actionCreators =
-            actionCreatorProps || ({} as ActionCreatorMap<TActions, TBoundActionProps>);
+            actionCreatorProps || ({} as ActionCreatorsMap<TActions, TActionProps>);
           // Bind action creators to dispatch
           this.bindDispatch(actionCreators);
 
@@ -173,15 +158,13 @@ export class Connector<TState extends object, TActions extends Action> {
             });
         };
 
-        private bindDispatch = (
-          actionCreators: ActionCreatorMap<TActions, TBoundActionProps>
-        ) => {
+        private bindDispatch = (actionCreators: TActionProps) => {
           const boundCreators = mapValues<ActionCreator<any>, (payload) => void>(
             actionCreators,
             actionCreator => {
               return payload => _dispatch(actionCreator(payload));
             }
-          ) as TBoundActionProps;
+          ) as TActionProps;
 
           if (this._isConstructor) {
             Object.assign(this.state, boundCreators);
