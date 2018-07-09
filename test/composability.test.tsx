@@ -18,7 +18,7 @@ import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import * as React from 'react';
 import { of } from 'rxjs';
-import { ActionTypes, makeApp } from './app';
+import { ActionTypes, makeApp, Actions } from './app';
 import { CounterActionTypes } from './lib';
 
 Enzyme.configure({ adapter: new Adapter() });
@@ -53,8 +53,13 @@ interface ObservableProps {
   name: string;
 }
 
+interface DispatchProps {
+  remove: () => Actions[ActionTypes.REMOVE_NUMBER];
+  add: (addBy: number) => Actions[ActionTypes.ADD_NUMBER];
+}
+
 const renderSpy = jest.fn();
-class TestComponent extends React.Component<ObservableProps> {
+class TestComponent extends React.Component<ObservableProps & DispatchProps> {
   render() {
     renderSpy(this.props);
     return (
@@ -67,7 +72,7 @@ class TestComponent extends React.Component<ObservableProps> {
   }
 }
 
-describe('compasability', () => {
+describe('composability', () => {
   let ConnectedComponent: React.ComponentClass;
   let middlewareSpy = jest.fn();
   let { app, counterLib, COUNTER, COUNTER_AS_STRING } = makeApp(middlewareSpy);
@@ -91,14 +96,18 @@ describe('compasability', () => {
       dev: false,
     });
 
-    ConnectedComponent = app.connect<ObservableProps, {}>(
+    ConnectedComponent = app.connect<ObservableProps, DispatchProps>(
       {
         counter: COUNTER,
         counterString: COUNTER_AS_STRING,
         sum: SUM,
         name: NAME,
       },
-      null
+      {
+        remove: () => app.actionCreator(ActionTypes.REMOVE_NUMBER)({}),
+        add: (addBy: number) =>
+          app.actionCreator(ActionTypes.ADD_NUMBER)({ number: addBy }),
+      }
     )(TestComponent);
   });
 
