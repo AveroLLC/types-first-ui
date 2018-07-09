@@ -205,19 +205,20 @@ export default app;
 
 With our concrete instances, we can now create our app instance. This is used to bridge React and Redux--the app exposes a `connect` function that mirrors the Redux variation, except with support for our path and selector primitives. We use an explicit import of the app rather than a `Provider` component using React's context API.
 
-Types-First UI provides a generic `BoundActionCreator` which is used to define the shape of the `ActionProps` interface we pass to our React components. While the connect function expects action creators, React expects callback functions returning `void`. The `BoundActionCreator` type will allow you to accurately represent this shape.
-
 ```typescript
-import { BoundActionCreator } from 'types-first-ui';
+import { ActionCreator } from 'types-first-ui';
+// helper utility to extract ActionCreator type given the discriminant
+// useful to minimize boilerplate in ActionProps
+type Creator<T extends ActionTypes> = ActionCreator<Extract<AppActions, { type: T }>>;
 
-// 10. Define a React component with Types-First framework 
+// 10. Define a React component with Types-First framework
 interface DataProps {
   counter: number;
   doubleCounter: number;
 }
 
 interface ActionProps {
-  addRequest: BoundActionCreator<AppActions, ActionTypes.ADD_REQUEST>;
+  addRequest: Creator<ActionTypes.ADD_REQUEST>;
 }
 
 type Props = DataProps & ActionProps;
