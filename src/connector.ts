@@ -19,7 +19,7 @@ import * as React from 'react';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, sample } from 'rxjs/operators';
 import { Action, Arg0, Dispatch } from './types';
-import shallowEqual from './utils/shallowEqual';
+import { comparators } from './utils/comparators';
 import { ActionCreator } from './implementAction';
 
 // A type representing an action creator bound to the store dispatch function
@@ -97,7 +97,7 @@ export class Connector<TState extends object, TActions extends Action> {
 
         shouldComponentUpdate(nextProps) {
           // If own props are equal, this is a change coming from state - we should re-render
-          if (shallowEqual(this.props, nextProps)) {
+          if (comparators.shallowEqual(this.props, nextProps)) {
             return true;
           }
           // TODO: refactor to not suck

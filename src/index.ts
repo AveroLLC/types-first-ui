@@ -17,7 +17,7 @@
 import createTypesafeRedux from './typesafeRedux';
 import ofType from './utils/ofType';
 import { flow } from './utils/flow';
-import { shallowEqual } from './utils/shallowEqual';
+import { comparators } from './utils/comparators';
 
 export * from './types';
 export * from './typesafeRedux';
@@ -27,4 +27,4 @@ export * from './implementAction';
 export * from './createApp';
 export * from './connector';
 
-export { createTypesafeRedux, ofType, flow, shallowEqual };
+export { createTypesafeRedux, ofType, flow, comparators };
