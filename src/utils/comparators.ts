@@ -1,4 +1,5 @@
 // Copied from react-redux
+import { isEqual } from 'lodash';
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
@@ -10,7 +11,7 @@ function is(x, y) {
   }
 }
 
-export default function shallowEqual(objA, objB) {
+function shallowEqual(objA, objB) {
   if (is(objA, objB)) return true;
 
   if (
@@ -35,3 +36,17 @@ export default function shallowEqual(objA, objB) {
 
   return true;
 }
+
+function strictEqual(a, b) {
+  return a === b;
+}
+
+function deepEqual(a, b) {
+  return isEqual(a, b);
+}
+
+export const comparators = {
+  shallowEqual,
+  strictEqual,
+  deepEqual,
+};
