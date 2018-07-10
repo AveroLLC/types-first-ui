@@ -10,7 +10,7 @@ function is(x, y) {
   }
 }
 
-export default function shallowEqual(objA, objB) {
+export function shallowEqual(objA, objB) {
   if (is(objA, objB)) return true;
 
   if (
