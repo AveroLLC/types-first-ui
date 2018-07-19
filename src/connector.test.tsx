@@ -19,8 +19,8 @@ import Adapter from 'enzyme-adapter-react-16';
 import * as React from 'react';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BoundActionCreator } from './connector';
 import createTypesafeRedux from './typesafeRedux';
+import { BoundActionCreator } from './connector';
 
 Enzyme.configure({ adapter: new Adapter() });
 const { shallow, render, mount } = Enzyme;
