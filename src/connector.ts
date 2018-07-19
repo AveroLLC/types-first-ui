@@ -22,7 +22,6 @@ import { Action, Arg0, Dispatch } from './types';
 import { comparators } from './utils/comparators';
 import { ActionCreator } from './implementAction';
 
-// A type representing an action creator bound to the store dispatch function
 export type BoundActionCreator<
   TAllActions extends Action,
   TActionType extends TAllActions['type']
@@ -159,12 +158,12 @@ export class Connector<TState extends object, TActions extends Action> {
         };
 
         private bindDispatch = (actionCreators: TActionProps) => {
-          const boundCreators = mapValues<ActionCreator<any>, (payload) => void>(
-            actionCreators,
-            actionCreator => {
-              return payload => _dispatch(actionCreator(payload));
-            }
-          ) as TActionProps;
+          const boundCreators = mapValues<
+            (...args: any[]) => TActions,
+            (...args) => void
+          >(actionCreators, actionCreator => {
+            return (...args) => _dispatch(actionCreator(...args));
+          }) as TActionProps;
 
           if (this._isConstructor) {
             Object.assign(this.state, boundCreators);
