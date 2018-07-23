@@ -2,15 +2,15 @@ import * as React from 'react';
 import app from '../redux/connector';
 import { ActionTypes, AppActions } from '../redux/interfaces/actions';
 import { Paths } from '../redux/paths';
-import { BoundActionCreator } from '../../../src';
+import { Creator } from '../redux/interfaces/app';
 
 interface DataProps {
   counter: number;
 }
 
 interface ActionProps {
-  add: BoundActionCreator<AppActions, ActionTypes.COUNTER_ADD_REQUEST>;
-  subtract: BoundActionCreator<AppActions, ActionTypes.COUNTER_SUBTRACT>;
+  add: Creator<ActionTypes.COUNTER_ADD_REQUEST>;
+  subtract: Creator<ActionTypes.COUNTER_SUBTRACT>;
 }
 
 type Props = DataProps & ActionProps;
