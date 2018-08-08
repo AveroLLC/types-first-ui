@@ -52,7 +52,11 @@ describe('app testability', () => {
         name: 'Elliot',
       });
 
-      return expect(NAME.pipe(take(1)).toPromise()).resolves.toEqual('Elliot');
+      return expect(
+        NAME(state$)
+          .pipe(take(1))
+          .toPromise()
+      ).resolves.toEqual('Elliot');
     });
   });
 
@@ -103,9 +107,14 @@ describe('app testability', () => {
     it('should allow testing of epics', () => {
       const { epic, creator } = addNumber;
 
-      const emittedAction = epic(of(creator({ number: 10 })), {
-        getValue: () => 7,
-      });
+      const state$ = of(initialState);
+
+      const emittedAction = epic(
+        of(creator({ number: 10 })),
+        state$,
+        { lib: { getValue: () => 7 } },
+        null
+      );
 
       return expect(emittedAction.toPromise()).resolves.toEqual({
         type: CounterActionTypes.increment,

@@ -20,6 +20,7 @@ import { Selector } from './selectors';
 import { StateTransform } from './types';
 import { get } from './utils/get';
 import { set } from './utils/set';
+import { memoize } from 'lodash';
 
 // A path is a selector that additionally has utility functions to to immutably get & reassign values
 // on the state tree
@@ -27,7 +28,8 @@ export interface PathAPI<TState extends object, TVal> {
   get: (state: TState) => TVal;
   set: (nextVal: TVal) => StateTransform<TState>;
 }
-export type Path<TState extends object, TVal> = Selector<TVal> & PathAPI<TState, TVal>;
+export type Path<TState extends object, TVal> = Selector<TState, TVal> &
+  PathAPI<TState, TVal>;
 
 export interface PathCreator<TState extends object> {
   path<K extends keyof TState>(ks: [K], defaultVal?: TState[K]): Path<TState, TState[K]>;
@@ -145,17 +147,17 @@ export interface PathCreator<TState extends object> {
   ): Path<TState, TState[K][K1][K2][K3][K4][K5][K6][K7][K8][K9][K10]>;
 }
 
-export default function createPathFactory<TState extends object>(
-  state$: Observable<TState>
-): PathCreator<TState> {
+export default function createPathFactory<TState extends object>(): PathCreator<TState> {
   const path = (keys: any, defaultVal: any) => {
-    const _get = get(keys, defaultVal);
-    const _set = set(keys);
-    const obs$ = state$.pipe(
-      map(_get),
-      distinctUntilChanged(),
-      publishReplay(1),
-      refCount()
+    const _get = get<TState>(keys, defaultVal);
+    const _set = set<TState>(keys);
+    const obs$ = memoize((state$: Observable<TState>) =>
+      state$.pipe(
+        map(_get),
+        distinctUntilChanged(),
+        publishReplay(1),
+        refCount()
+      )
     );
 
     return Object.assign(obs$, {

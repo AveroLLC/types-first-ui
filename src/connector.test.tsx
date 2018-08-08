@@ -20,7 +20,7 @@ import * as React from 'react';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import createTypesafeRedux from './typesafeRedux';
-import { BoundActionCreator } from './connector';
+import { Selector } from './selectors';
 
 Enzyme.configure({ adapter: new Adapter() });
 const { shallow, render, mount } = Enzyme;
@@ -46,6 +46,20 @@ interface ActionsMap {
 }
 
 type Actions = ActionsMap[keyof ActionsMap];
+
+interface OwnProps {
+  amount?: number;
+}
+
+interface ObservableProps {
+  counter: number;
+  counterPlusAmount: number;
+}
+
+interface ActionCreatorProps {
+  increment: typeof increment['creator'];
+  decrement: typeof decrement['creator'];
+}
 
 function setup() {
   const { action, createApp, selector, path } = createTypesafeRedux<
@@ -87,22 +101,6 @@ function setup() {
     dev: false,
   });
 
-  type BoundCreator<T extends ActionTypes> = BoundActionCreator<Actions, T>;
-
-  interface OwnProps {
-    amount?: number;
-  }
-
-  interface ObservableProps {
-    counter: number;
-    counterPlusAmount: number;
-  }
-
-  interface ActionCreatorProps {
-    increment: BoundCreator<ActionTypes.INCREMENT>;
-    decrement: BoundCreator<ActionTypes.DECREMENT>;
-  }
-
   type Props = OwnProps & ObservableProps & ActionCreatorProps;
 
   const renderSpy = jest.fn();
@@ -134,6 +132,7 @@ function setup() {
     app,
     actionImplementations,
     PATHS,
+    selector,
   };
 }
 
@@ -157,7 +156,7 @@ function setup() {
  */
 
 describe('connector', () => {
-  let { TestComponent, renderSpy, app, actionImplementations, PATHS } = setup();
+  let { TestComponent, renderSpy, app, actionImplementations, PATHS, selector } = setup();
 
   beforeEach(() => {
     const t = setup();
@@ -166,6 +165,7 @@ describe('connector', () => {
     app = t.app;
     actionImplementations = t.actionImplementations;
     PATHS = t.PATHS;
+    selector = t.selector;
   });
 
   describe('with factory functions', () => {
@@ -177,27 +177,33 @@ describe('connector', () => {
       subscribeSpy = jest.fn();
       unsubscribeSpy = jest.fn();
 
-      const observableProp = new Observable(subscriber => {
-        subscribeSpy();
+      const observableProp: Selector<any, any> = state$ =>
+        new Observable(subscriber => {
+          subscribeSpy();
 
-        const sub = PATHS.COUNTER.subscribe(subscriber);
+          const sub = PATHS.COUNTER(state$).subscribe(subscriber);
 
-        return () => {
-          sub.unsubscribe();
-          unsubscribeSpy();
-        };
-      });
+          return () => {
+            sub.unsubscribe();
+            unsubscribeSpy();
+          };
+        });
+
+      const counterPlusAmount = (amount: number) =>
+        selector(PATHS.COUNTER, counter => {
+          return counter + amount;
+        });
 
       const observablePropsFactory = ownProps => ({
         counter: observableProp,
-        counterPlusAmount: PATHS.COUNTER.pipe(map(val => val + (ownProps.amount || 0))),
+        counterPlusAmount: counterPlusAmount(ownProps.amount),
       });
 
       const actionProps = {
         increment: app.actionCreator(ActionTypes.INCREMENT),
         decrement: app.actionCreator(ActionTypes.DECREMENT),
       };
-      ConnectedComponent = app.connect(
+      ConnectedComponent = app.connect<ObservableProps, ActionCreatorProps>(
         observablePropsFactory,
         actionProps
       )(TestComponent);
@@ -315,26 +321,34 @@ describe('connector', () => {
       subscribeSpy = jest.fn();
       unsubscribeSpy = jest.fn();
 
-      const observableProp = new Observable(subscriber => {
-        subscribeSpy();
+      const observableProp: Selector<any, number> = state$ =>
+        new Observable(subscriber => {
+          subscribeSpy();
 
-        const sub = PATHS.COUNTER.subscribe(subscriber);
+          const sub = PATHS.COUNTER(state$).subscribe(subscriber);
 
-        return () => {
-          sub.unsubscribe();
-          unsubscribeSpy();
-        };
-      });
+          return () => {
+            sub.unsubscribe();
+            unsubscribeSpy();
+          };
+        });
+
+      const counterPlusAmount = (amount: number) =>
+        selector(PATHS.COUNTER, counter => {
+          return counter + amount;
+        });
 
       const observablePropsFactory = {
         counter: observableProp,
+        counterPlusAmount: counterPlusAmount(2),
       };
 
       const actionPropsFactory = {
         increment: app.actionCreator(ActionTypes.INCREMENT),
+        decrement: app.actionCreator(ActionTypes.DECREMENT),
       };
 
-      ConnectedComponent = app.connect(
+      ConnectedComponent = app.connect<ObservableProps, ActionCreatorProps>(
         observablePropsFactory,
         actionPropsFactory
       )(TestComponent);

@@ -21,19 +21,30 @@ import { map, sample } from 'rxjs/operators';
 import { Action, Arg0, Dispatch } from './types';
 import { comparators } from './utils/comparators';
 import { ActionCreator } from './implementAction';
+import { Selector } from './selectors';
+import { Path } from './paths';
 
-export type BoundActionCreator<
-  TAllActions extends Action,
-  TActionType extends TAllActions['type']
-> = (payload: Extract<TAllActions, { type: TActionType }>['payload']) => void;
+// export type ObservableMap<TObservableMap> = {
+//   [K in keyof TObservableMap]: Observable<any>
+// };
+// export type ObservableProps<T extends object> = { [P in keyof T]: Observable<T[P]> };
+// export type ObservablePropsFactory<
+//   TObservableProps extends object,
+//   TOwnProps,
+//   TState extends object
+// > = (
+//   state$: Observable<TState>,
+//   ownProps?: TOwnProps
+// ) => ObservableProps<TObservableProps>;
 
-export type ObservableMap<TObservableMap> = {
-  [K in keyof TObservableMap]: Observable<any>
+export type SelectorProps<T extends object, TState extends object> = {
+  [P in keyof T]: Selector<TState, T[P]> | Path<TState, T[P]>
 };
-export type ObservableProps<T extends object> = { [P in keyof T]: Observable<T[P]> };
-export type ObservablePropsFactory<TObservableProps extends object, TOwnProps> = (
-  ownProps?: TOwnProps
-) => ObservableProps<TObservableProps>;
+export type SelectorPropsFactory<
+  TObservableProps extends object,
+  TOwnProps,
+  TState extends object
+> = (ownProps?: TOwnProps) => SelectorProps<TObservableProps, TState>;
 
 export type ActionCreatorsMap<TAllActions extends Action, TActionProps> = Record<
   keyof TActionProps,
@@ -50,21 +61,21 @@ export class Connector<TState extends object, TActions extends Action> {
   }
 
   connect<
-    TObservableProps extends object,
+    TSelectorProps extends object,
     TActionProps extends ActionCreatorsMap<TActions, TActionProps> = null,
     TOwnProps = null
   >(
-    observablePropsFactory:
-      | ObservableProps<TObservableProps>
-      | ObservablePropsFactory<TObservableProps, TOwnProps>,
+    selectorPropsFactory:
+      | SelectorProps<TSelectorProps, TState>
+      | SelectorPropsFactory<TSelectorProps, TOwnProps, TState>,
     actionCreatorProps: TActionProps
   ) {
     const { _state$, _dispatch } = this;
 
     return (
-      component: React.ComponentClass<TObservableProps & TActionProps & TOwnProps>
+      component: React.ComponentClass<TSelectorProps & TActionProps & TOwnProps>
     ): React.ComponentClass<TOwnProps> => {
-      type ComponentState = TObservableProps & TActionProps;
+      type ComponentState = TSelectorProps & TActionProps;
 
       return class ConnectedComponent extends React.Component<TOwnProps, ComponentState> {
         // dispatchProps and observablePropValues are passed to render the wrapped component
@@ -82,7 +93,7 @@ export class Connector<TState extends object, TActions extends Action> {
           this.state = {} as ComponentState;
 
           // Run ownprops through observable props factory
-          const observableProps = this.createObservableProps(props);
+          const observableProps = this.createSelectorProps(props);
           // Issue subscription to observable props
           this.subscribeObservableProps(observableProps);
           // Run ownprops through action creator factory
@@ -100,11 +111,9 @@ export class Connector<TState extends object, TActions extends Action> {
             return true;
           }
           // TODO: refactor to not suck
-          const obsIsFactory = isFunction(observablePropsFactory);
+          const obsIsFactory = isFunction(selectorPropsFactory);
           if (obsIsFactory) {
-            this.subscribeObservableProps(this.createObservableProps(nextProps));
-          }
-          if (obsIsFactory) {
+            this.subscribeObservableProps(this.createSelectorProps(nextProps));
             return false;
           }
 
@@ -121,26 +130,26 @@ export class Connector<TState extends object, TActions extends Action> {
           }
         }
 
-        private createObservableProps = (ownProps: TOwnProps) => {
-          if (observablePropsFactory == null) {
-            return {} as ObservableProps<TObservableProps>;
+        private createSelectorProps = (ownProps: TOwnProps) => {
+          if (selectorPropsFactory == null) {
+            return {} as SelectorProps<TSelectorProps, TState>;
           }
-          if (isFunction(observablePropsFactory)) {
-            return observablePropsFactory(ownProps);
+          if (isFunction(selectorPropsFactory)) {
+            return selectorPropsFactory(ownProps);
           }
-          return observablePropsFactory;
+          return selectorPropsFactory;
         };
 
         private subscribeObservableProps = (
-          observableProps: ObservableProps<TObservableProps>
+          observableProps: SelectorProps<TSelectorProps, TState>
         ) => {
           this.clearSubscription();
 
           // TODO: the keys thing is weird, I can get rid of it
-          const keys = Object.keys(observableProps) as Array<keyof TObservableProps>;
+          const keys = Object.keys(observableProps) as Array<keyof TSelectorProps>;
           this.observablePropSubscription = combineLatest(
             ...keys.map(key => {
-              const obs$ = observableProps[key];
+              const obs$ = observableProps[key](_state$);
               return obs$.pipe(map(value => ({ [key]: value })));
             })
           )

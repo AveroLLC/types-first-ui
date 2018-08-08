@@ -46,17 +46,16 @@ export interface CounterEpicDeps {
   getValue: () => number;
 }
 
-export function makeLib() {
+export function makeLib(subTreeKey: string) {
   const redux = createTypesafeRedux<
     CounterState,
     CounterActions[keyof CounterActions],
     CounterEpicDeps
   >();
 
-  const COUNTER = redux.path(['counter']);
-  const COUNTER_AS_STRING = redux.selector(COUNTER, counter => {
-    return `Counter Value is ${counter}`;
-  });
+  function createPaths() {
+    const COUNTER = redux.path(['counter']);
+  }
 
   const increment = redux.action(CounterActionTypes.increment, {
     reducer: (state, action) => {
@@ -71,13 +70,19 @@ export function makeLib() {
     },
   });
   const incrementEpic = redux.action(CounterActionTypes.incrementEpic, {
-    epic: (action$, deps) => {
+    epic: (action$, state$, deps) => {
       return action$.pipe(
         map(v => {
           return increment.creator({ amount: deps.getValue() });
         })
       );
     },
+  });
+
+  const COUNTER = redux.path(['counter']);
+
+  const COUNTER_AS_STRING = redux.selector(COUNTER, counter => {
+    return `Counter Value is ${counter}`;
   });
 
   const counterLib = redux.createApp({

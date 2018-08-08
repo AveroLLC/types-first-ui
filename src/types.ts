@@ -36,28 +36,34 @@ export type IReducer<TState extends object, TAction extends Action> = (
 export type Epic<
   TWatchedAction extends Action,
   TReturnedAction extends Action,
+  TState extends object,
   TEpicDependencies extends object
 > = (
   action$: Observable<TWatchedAction>,
+  state$: Observable<TState>,
   deps: TEpicDependencies
 ) => Observable<TReturnedAction>;
 
 export type MiddlewareEpic<
   TAllActions extends Action,
+  TState extends object,
   TEpicDependencies extends object
-> = Epic<TAllActions, never, TEpicDependencies>;
+> = Epic<TAllActions, never, TState, TEpicDependencies>;
 
 export type AllActionsEpic<
   TAllActions extends Action,
+  TState extends object,
   TEpicDependencies extends object
-> = Epic<TAllActions, TAllActions, TEpicDependencies>;
+> = Epic<TAllActions, TAllActions, TState, TEpicDependencies>;
 
 export type SingleActionEpic<
   TAllActions extends Action,
   TAction extends TAllActions,
+  TState extends object,
   TEpicDependencies extends object
 > = (
   action$: Observable<TAction>,
+  state$: Observable<TState>,
   deps: TEpicDependencies,
   allActions$: Observable<TAllActions>
 ) => Observable<TAllActions>;

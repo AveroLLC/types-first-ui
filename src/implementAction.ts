@@ -29,7 +29,7 @@ export interface ActionImplementation<
   constant: TAction['type'];
   creator: ActionCreator<TAction>;
   reducer?: IReducer<TState, TAction>;
-  epic?: SingleActionEpic<TAllActions, TAction, TEpicDependencies>;
+  epic?: SingleActionEpic<TAllActions, TAction, TState, TEpicDependencies>;
 }
 
 export interface ActionImplementer<
@@ -45,6 +45,7 @@ export interface ActionImplementer<
       epic?: SingleActionEpic<
         TAllActions,
         Extract<TOwnActions, { type: K }>,
+        TState,
         TEpicDependencies
       >;
     }

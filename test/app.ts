@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import { ofType } from '../src';
+import { ofType, CombinedState } from '../src';
 import { createTypesafeRedux } from '../src';
 
 import { CounterActionTypes, makeLib } from './lib';
@@ -28,7 +28,7 @@ import {
   sample,
   buffer,
 } from 'rxjs/operators';
-import { never } from 'rxjs';
+import { never, Observable } from 'rxjs';
 
 export interface AppState {
   name: string;
@@ -61,7 +61,7 @@ export interface Actions {
 }
 
 export function makeApp(middlewareSpy: () => void) {
-  const lib = makeLib();
+  const lib = makeLib('async');
   const { counterLib, COUNTER } = lib;
 
   interface Features {
@@ -75,7 +75,11 @@ export function makeApp(middlewareSpy: () => void) {
   const NAME = redux.path(['name']);
   const NUMBERS = redux.path(['numbers']);
 
-  const SUM = redux.selector(NUMBERS, COUNTER, (numbers, counter) => {
+  const LIB = redux.path(['lib']);
+  const LIB_COUNTER = (state$: Observable<CombinedState<AppState, Features>>) =>
+    COUNTER(LIB(state$));
+
+  const SUM = redux.selector(NUMBERS, LIB_COUNTER, (numbers, counter) => {
     return numbers.reduce((sum, n) => sum + n, 0) + counter;
   });
 
@@ -141,7 +145,6 @@ export function makeApp(middlewareSpy: () => void) {
   });
 
   return {
-    state$: redux.state$,
     app,
     NAME,
     NUMBERS,

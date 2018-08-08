@@ -113,9 +113,11 @@ export interface CreateAppParams<
 > {
   initialState: TOwnState;
   actions: ActionImplementationMap<TAllState, TOwnActions, TAllActions, TAllEpicDeps>;
-  extraEpics?: Array<Epic<TAllActions, TAllActions, TAllEpicDeps>>;
-  middleware?: Array<MiddlewareEpic<TAllActions, TAllEpicDeps>>;
+  extraEpics?: Array<Epic<TAllActions, TAllActions, TAllState, TAllEpicDeps>>;
+  middleware?: Array<MiddlewareEpic<TAllActions, TAllState, TAllEpicDeps>>;
 }
+
+const emptyObj = {};
 
 export class App<
   TOwnState extends object,
@@ -133,7 +135,7 @@ export class App<
     TAllActions,
     TAllEpicDeps
   >;
-  private _extraEpics: Array<Epic<TAllActions, TAllActions, TAllEpicDeps>>;
+  private _extraEpics: Array<Epic<TAllActions, TAllActions, TAllState, TAllEpicDeps>>;
 
   private _state$: BehaviorSubject<TAllState>;
 
@@ -144,7 +146,6 @@ export class App<
   private _connector: Connector<TAllState, TAllActions>;
 
   constructor(
-    state$: BehaviorSubject<TAllState>,
     features: TFeatures,
     createAppParams: CreateAppParams<
       TOwnState,
@@ -154,7 +155,7 @@ export class App<
       TAllEpicDeps
     >
   ) {
-    this._state$ = state$;
+    this._state$ = new BehaviorSubject<TAllState>(emptyObj as TAllState);
     this._features = features;
     this._initialState = createAppParams.initialState;
     this._implementation = createAppParams.actions;
@@ -203,7 +204,7 @@ export class App<
       TAllState,
       TAllEpicDeps
     >[] = this._extraEpics.map(epic => (allActions$, state$, deps) =>
-      epic(allActions$, deps)
+      epic(allActions$, state$, deps)
     );
 
     each(this._implementation, (actionImpl, type) => {
@@ -214,6 +215,7 @@ export class App<
       epics = epics.concat((allActions$, state$, deps) => {
         return actionImpl.epic(
           allActions$.ofType(actionImpl.constant) as ActionsObservable<any>,
+          state$,
           deps,
           allActions$
         );
@@ -247,7 +249,9 @@ export class App<
     each(this._features, (app, subtreeKey) => {
       app.wireUpState(state$.pipe(pluck(subtreeKey)));
     });
-    state$.subscribe(this._state$);
+    if (state$ !== this._state$) {
+      state$.subscribe(this._state$);
+    }
   };
 
   private wireUpDispatch = (dispatch: Dispatch<TAllActions>) => {
@@ -310,6 +314,7 @@ export class App<
       currentState = nextState;
     });
 
+    this.wireUpState(this._state$);
     this.wireUpDispatch(store.dispatch);
   };
 

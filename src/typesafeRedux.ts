@@ -14,8 +14,6 @@
    limitations under the License.
  */
 
-import { each } from 'lodash';
-import { BehaviorSubject } from 'rxjs';
 import {
   App,
   AppCreator,
@@ -30,8 +28,6 @@ import createPathFactory, { PathCreator } from './paths';
 import createSelectorFactory, { SelectorCreator } from './selectors';
 import { Action } from './types';
 
-const emptyObj = {};
-
 export type TypesafeRedux<
   TOwnState extends object,
   TAllState extends object,
@@ -42,16 +38,7 @@ export type TypesafeRedux<
 > = PathCreator<TAllState> &
   SelectorCreator<TAllState> &
   ActionImplementer<TAllState, TOwnActions, TAllActions, TAllEpicDeps> &
-  AppCreator<
-    TOwnState,
-    TAllState,
-    TOwnActions,
-    TAllActions,
-    TFeaturesMap,
-    TAllEpicDeps
-  > & {
-    state$: BehaviorSubject<TAllState>;
-  };
+  AppCreator<TOwnState, TAllState, TOwnActions, TAllActions, TFeaturesMap, TAllEpicDeps>;
 
 export default function createTypesafeRedux<
   TOwnState extends object,
@@ -72,12 +59,8 @@ export default function createTypesafeRedux<
   type TAllActions = CombinedActions<TOwnActions, TFeaturesMap>;
   type TAllEpicDeps = CombinedEpicDependencies<TOwnEpicDeps, TFeaturesMap>;
 
-  const state$: BehaviorSubject<TAllState> = new BehaviorSubject<TAllState>(
-    emptyObj as TAllState
-  );
-
-  const { path } = createPathFactory<TAllState>(state$);
-  const { selector } = createSelectorFactory<TAllState>(state$);
+  const { path } = createPathFactory<TAllState>();
+  const { selector } = createSelectorFactory<TAllState>();
   const { action } = createActionImplementer<
     TAllState,
     TOwnActions,
@@ -94,16 +77,10 @@ export default function createTypesafeRedux<
       TAllActions,
       TFeaturesMap,
       TAllEpicDeps
-    >(state$, externalFeatures, params);
+    >(externalFeatures, params);
   };
 
-  each(externalFeatures, (feature, subtreeKey) => {
-    // @ts-ignore ts server is really choking on the typings here
-    feature.wireUpState(path([subtreeKey], emptyObj));
-  });
-
   return {
-    state$,
     path,
     selector,
     action,

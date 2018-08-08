@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { take, tap, toArray } from 'rxjs/operators';
 import createPathFactory from './paths';
 import { Selector } from './selectors';
@@ -41,25 +41,29 @@ function setup() {
   const evalSpy = jest.fn();
 
   const state$ = new BehaviorSubject<State>(state);
-  const { path } = createPathFactory<State>(state$.pipe(tap(evalSpy)));
+  const { path } = createPathFactory<State>();
   const COUNTER = path(['counter']);
   const NESTED = path(['a', 'b', 'c', 'string']);
+  const NESTED_OBJ = path(['a', 'b', 'c']);
   const COLLECTION_BY_INDEX = (i: number) => path(['collection', i]);
 
-  return { state, evalSpy, state$, path, COUNTER, NESTED };
+  return { state, evalSpy, state$, path, COUNTER, NESTED, NESTED_OBJ };
 }
 
+let stateSpy$: any;
 describe('paths', () => {
-  let { state, evalSpy, state$, path, COUNTER, NESTED } = setup();
+  let { state, evalSpy, state$, path, COUNTER, NESTED, NESTED_OBJ } = setup();
 
   beforeEach(() => {
     const s = setup();
     state = s.state;
     evalSpy = s.evalSpy;
     state$ = s.state$;
+    stateSpy$ = state$.pipe(tap(evalSpy));
     path = s.path;
     COUNTER = s.COUNTER;
     NESTED = s.NESTED;
+    NESTED_OBJ = s.NESTED_OBJ;
   });
 
   describe('#get', () => {
@@ -126,12 +130,16 @@ describe('paths', () => {
 
   describe('observable', () => {
     it('should be an observable', () => {
-      expect(COUNTER).toBeInstanceOf(Observable);
+      expect(COUNTER(stateSpy$)).toBeInstanceOf(Observable);
     });
 
     describe('changes', () => {
       it('should emit the initial value of the path', () => {
-        return expect(COUNTER.pipe(take(1)).toPromise()).resolves.toEqual(0);
+        return expect(
+          COUNTER(state$)
+            .pipe(take(1))
+            .toPromise()
+        ).resolves.toEqual(0);
       });
 
       it('should emit the most recently assigned value of the path on subscription', () => {
@@ -140,14 +148,33 @@ describe('paths', () => {
         state$.next(nextState);
         nextState = COUNTER.set(2)(nextState);
         state$.next(nextState);
-        return expect(COUNTER.pipe(take(1)).toPromise()).resolves.toEqual(2);
+        return expect(
+          COUNTER(state$)
+            .pipe(take(1))
+            .toPromise()
+        ).resolves.toEqual(2);
+      });
+
+      it.only('memoizes the state stream', async () => {
+        const state2 = {
+          counter: 0,
+          a: { b: { c: { number: 2, string: 'b' } } },
+          collection: [],
+        };
+
+        const og = NESTED_OBJ(state$);
+        const ogAgain = NESTED_OBJ(state$);
+
+        expect(og).toBe(ogAgain);
       });
 
       it('should emit the value of the path each time it changes', () => {
-        const emittedValues = COUNTER.pipe(
-          take(3),
-          toArray()
-        ).toPromise();
+        const emittedValues = COUNTER(state$)
+          .pipe(
+            take(3),
+            toArray()
+          )
+          .toPromise();
         let nextState = state;
         nextState = COUNTER.set(1)(nextState);
         state$.next(nextState);
@@ -157,10 +184,12 @@ describe('paths', () => {
       });
 
       it('should not emit if another part of the state tree changes', () => {
-        const emittedValues = COUNTER.pipe(
-          take(3),
-          toArray()
-        ).toPromise();
+        const emittedValues = COUNTER(state$)
+          .pipe(
+            take(3),
+            toArray()
+          )
+          .toPromise();
         let nextState = state;
         nextState = COUNTER.set(1)(nextState);
         state$.next(nextState);
@@ -177,27 +206,37 @@ describe('paths', () => {
         COUNTER = path(['counter'], 10);
       });
 
-      it('should emit the default value if the pat is null', () => {
+      it('should emit the default value if the path is null', () => {
         let nextState = state;
         nextState = COUNTER.set(null)(nextState);
         state$.next(nextState);
 
-        return expect(COUNTER.pipe(take(1)).toPromise()).resolves.toEqual(10);
+        return expect(
+          COUNTER(stateSpy$)
+            .pipe(take(1))
+            .toPromise()
+        ).resolves.toEqual(10);
       });
 
-      it('should emit the default value if the pat is undefined', () => {
+      it('should emit the default value if the path is undefined', () => {
         let nextState = state;
         nextState = COUNTER.set(undefined)(nextState);
         state$.next(nextState);
 
-        return expect(COUNTER.pipe(take(1)).toPromise()).resolves.toEqual(10);
+        return expect(
+          COUNTER(state$)
+            .pipe(take(1))
+            .toPromise()
+        ).resolves.toEqual(10);
       });
 
       it('should not emit if the assigned value changes but the result value is the same', () => {
-        const emittedValues = COUNTER.pipe(
-          take(3),
-          toArray()
-        ).toPromise();
+        const emittedValues = COUNTER(state$)
+          .pipe(
+            take(3),
+            toArray()
+          )
+          .toPromise();
         let nextState = state;
         // Each of the next 3 sets should result in a return value of 10, so just 1 emit:
         nextState = COUNTER.set(null)(nextState);
@@ -215,7 +254,7 @@ describe('paths', () => {
 
     describe('replay and ref counting', () => {
       let source$: Observable<State>;
-      let COUNTER: Selector<any>;
+      let COUNTER: Selector<State, any>;
 
       beforeEach(() => {
         // TODO: I removed withSurce
@@ -223,23 +262,23 @@ describe('paths', () => {
       });
 
       it('should execute the source on initial subscription', () => {
-        COUNTER.subscribe();
+        COUNTER(stateSpy$).subscribe();
         expect(evalSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should not execute the source on subsequent subscription', () => {
-        COUNTER.subscribe();
-        COUNTER.subscribe();
-        COUNTER.subscribe();
+        COUNTER(stateSpy$).subscribe();
+        COUNTER(stateSpy$).subscribe();
+        COUNTER(stateSpy$).subscribe();
         expect(evalSpy).toHaveBeenCalledTimes(1);
       });
 
       it('should unsubscribe when subscribers go to zero', () => {
-        let sub = COUNTER.subscribe();
+        let sub = COUNTER(stateSpy$).subscribe();
         sub.unsubscribe();
-        sub = COUNTER.subscribe();
+        sub = COUNTER(stateSpy$).subscribe();
         sub.unsubscribe();
-        sub = COUNTER.subscribe();
+        sub = COUNTER(stateSpy$).subscribe();
         sub.unsubscribe();
         expect(evalSpy).toHaveBeenCalledTimes(3);
       });

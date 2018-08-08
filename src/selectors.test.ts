@@ -18,7 +18,7 @@ import { map } from 'lodash';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take, toArray } from 'rxjs/operators';
 import createPathFactory from './paths';
-import createSelectorFactory from './selectors';
+import createSelectorFactory, { Selector } from './selectors';
 import { flow } from './utils/flow';
 
 interface State {
@@ -49,8 +49,8 @@ function setup() {
   };
   const state$ = new BehaviorSubject<State>(state);
 
-  const { path } = createPathFactory(state$);
-  const { selector } = createSelectorFactory(state$);
+  const { path } = createPathFactory<State>();
+  const { selector } = createSelectorFactory<State>();
 
   const COUNTER = path(['counter']);
   const GREETING = path(['greeting']);
@@ -78,7 +78,14 @@ describe('selectors', () => {
   describe('observable', () => {
     it('should be an observable', () => {
       const doubledCounter = selector(COUNTER, counter => counter * 2);
-      expect(doubledCounter).toBeInstanceOf(Observable);
+      expect(doubledCounter(state$)).toBeInstanceOf(Observable);
+    });
+
+    it('should memoize the state$ stream', () => {
+      const counterSelector = selector(COUNTER, counter => counter * 2);
+      const counterSelectorInstance1 = counterSelector(state$);
+      const counterSelectorInstance2 = counterSelector(state$);
+      expect(counterSelectorInstance1).toBe(counterSelectorInstance2);
     });
 
     describe('replay & ref count', () => {
@@ -89,7 +96,7 @@ describe('selectors', () => {
 
       it('should evaluate the project function with the input selectors once there is a subscriber', () => {
         const s = selector(COUNTER, GREETING, USERS, projectFn);
-        s.subscribe();
+        s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
         const [counter, greeting, users] = projectFn.mock.calls[0];
         expect(counter).toBe(state.counter);
@@ -99,22 +106,22 @@ describe('selectors', () => {
 
       it('should not re-evaluate the projector on subsequent subscriptions', () => {
         const s = selector(COUNTER, GREETING, USERS, projectFn);
-        s.subscribe();
+        s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
-        s.subscribe();
-        s.subscribe();
+        s(state$).subscribe();
+        s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
       });
 
       it('should re-evaluate the projector each time subscriptions go to zero', () => {
         const s = selector(COUNTER, GREETING, USERS, projectFn);
-        let sub = s.subscribe();
+        let sub = s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
         sub.unsubscribe();
-        sub = s.subscribe();
+        sub = s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(2);
         sub.unsubscribe();
-        sub = s.subscribe();
+        sub = s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(3);
       });
     });
@@ -122,7 +129,7 @@ describe('selectors', () => {
     describe('sample', () => {
       it('should not evaluate the projector if the input observables do not emit', () => {
         const s = selector(COUNTER, projectFn);
-        s.subscribe();
+        s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
         let nextState = state;
         // state emits a change to a different part of the state tree
@@ -136,7 +143,7 @@ describe('selectors', () => {
 
       it('should evaluate the projector at most once each time the source emits, with all the latest input values', () => {
         const s = selector(COUNTER, GREETING, USERS, projectFn);
-        s.subscribe();
+        s(state$).subscribe();
         expect(projectFn).toHaveBeenCalledTimes(1);
         let nextState = state;
         // state emits a change to a different part of the state tree
@@ -151,33 +158,6 @@ describe('selectors', () => {
         expect(greeting).toBe('heyo');
         expect(users).toBe(state.users);
       });
-
-      it('should accept any arbitrary observable as an input', () => {
-        const ticker$ = new BehaviorSubject<number>(100);
-        const s = selector(COUNTER, ticker$, projectFn);
-        s.subscribe();
-        expect(projectFn).toHaveBeenCalledTimes(1);
-        const [counter, ticker] = projectFn.mock.calls[0];
-        expect(counter).toBe(0);
-        expect(ticker).toBe(100);
-      });
-
-      it('should evaluate the projector only when the source emits', () => {
-        const ticker$ = new BehaviorSubject<number>(100);
-        const s = selector(COUNTER, ticker$, projectFn);
-        s.subscribe();
-        expect(projectFn).toHaveBeenCalledTimes(1);
-        const [counter, ticker] = projectFn.mock.calls[0];
-        expect(counter).toBe(0);
-        expect(ticker).toBe(100);
-
-        ticker$.next(200);
-        ticker$.next(300);
-        ticker$.next(400);
-        expect(projectFn).toHaveBeenCalledTimes(1);
-        state$.next(state);
-        expect(projectFn).toHaveBeenCalledTimes(2);
-      });
     });
 
     describe('distinct until changed', () => {
@@ -187,7 +167,7 @@ describe('selectors', () => {
           GREETING,
           (counter, greeting) => counter + greeting.length
         );
-        const emittedValues = s
+        const emittedValues = s(state$)
           .pipe(
             take(3),
             toArray()
@@ -231,7 +211,7 @@ describe('selectors', () => {
 
         const expectations = map(tableTest, ({ input, output }) => {
           return expect(
-            (input as Observable<any>)
+            (input as Selector<any, any>)(state$)
               .pipe(
                 take(output.length),
                 toArray()
@@ -260,7 +240,7 @@ describe('selectors', () => {
           (greeting, users) => map(users, user => `${greeting}, ${user.name}`),
           { compare: (a, b) => a.length === b.length }
         );
-        const output = s
+        const output = s(state$)
           .pipe(
             take(2),
             toArray()

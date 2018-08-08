@@ -47,10 +47,10 @@ const { mount } = Enzyme;
 // remove withsource
 
 interface ObservableProps {
-  counter: number;
+  // counter: number;
   counterString: string;
-  sum: number;
-  name: string;
+  // sum: number;
+  // name: string;
 }
 
 interface DispatchProps {
@@ -96,13 +96,12 @@ describe('composability', () => {
       dev: false,
     });
 
+    const observableProps = {
+      counterString: COUNTER_AS_STRING,
+    };
+
     ConnectedComponent = app.connect<ObservableProps, DispatchProps>(
-      {
-        counter: COUNTER,
-        counterString: COUNTER_AS_STRING,
-        sum: SUM,
-        name: NAME,
-      },
+      observableProps,
       {
         remove: () => app.actionCreator(ActionTypes.REMOVE_NUMBER)({}),
         add: (addBy: number) =>

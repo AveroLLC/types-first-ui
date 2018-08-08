@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-import { initial, isFunction, last } from 'lodash';
+import { initial, isFunction, last, memoize } from 'lodash';
 import { Observable, combineLatest } from 'rxjs';
 import {
   distinctUntilChanged,
@@ -32,74 +32,74 @@ export interface SelectorOptions<T> {
   compare: (a: T, b: T) => boolean;
 }
 // A selector is an observable over the state stream, which can have its source overridden
-export type Selector<TVal> = Observable<TVal>;
+export type Selector<TState, TVal> = (state$: Observable<TState>) => Observable<TVal>;
 
 export interface SelectorCreator<TState extends object> {
   selector<A, Result>(
-    selector1: Observable<A>,
+    selector1: Selector<TState, A>,
     projectFn: (arg1: A) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
     projectFn: (arg1: A, arg2: B) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
     projectFn: (arg1: A, arg2: B, arg3: C) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
     projectFn: (arg1: A, arg2: B, arg3: C, arg4: D) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, E, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
-    selector5: Observable<E>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
+    selector5: Selector<TState, E>,
     projectFn: (arg1: A, arg2: B, arg3: C, arg4: D, arg5: E) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, E, F, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
-    selector5: Observable<E>,
-    selector6: Observable<F>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
+    selector5: Selector<TState, E>,
+    selector6: Selector<TState, F>,
     projectFn: (arg1: A, arg2: B, arg3: C, arg4: D, arg5: E, arg6: F) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, E, F, G, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
-    selector5: Observable<E>,
-    selector6: Observable<F>,
-    selector7: Observable<G>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
+    selector5: Selector<TState, E>,
+    selector6: Selector<TState, F>,
+    selector7: Selector<TState, G>,
     projectFn: (arg1: A, arg2: B, arg3: C, arg4: D, arg5: E, arg6: F, arg7: G) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, E, F, G, H, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
-    selector5: Observable<E>,
-    selector6: Observable<F>,
-    selector7: Observable<G>,
-    selector8: Observable<H>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
+    selector5: Selector<TState, E>,
+    selector6: Selector<TState, F>,
+    selector7: Selector<TState, G>,
+    selector8: Selector<TState, H>,
     projectFn: (
       arg1: A,
       arg2: B,
@@ -111,17 +111,17 @@ export interface SelectorCreator<TState extends object> {
       arg8: H
     ) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
   selector<A, B, C, D, E, F, G, H, I, Result>(
-    selector1: Observable<A>,
-    selector2: Observable<B>,
-    selector3: Observable<C>,
-    selector4: Observable<D>,
-    selector5: Observable<E>,
-    selector6: Observable<F>,
-    selector7: Observable<G>,
-    selector8: Observable<H>,
-    selector9: Observable<I>,
+    selector1: Selector<TState, A>,
+    selector2: Selector<TState, B>,
+    selector3: Selector<TState, C>,
+    selector4: Selector<TState, D>,
+    selector5: Selector<TState, E>,
+    selector6: Selector<TState, F>,
+    selector7: Selector<TState, G>,
+    selector8: Selector<TState, H>,
+    selector9: Selector<TState, I>,
     projectFn: (
       arg1: A,
       arg2: B,
@@ -134,12 +134,12 @@ export interface SelectorCreator<TState extends object> {
       arg9: I
     ) => Result,
     opts?: SelectorOptions<Result>
-  ): Selector<Result>;
+  ): Selector<TState, Result>;
 }
 
-export default function createSelectorFactory<TState extends object>(
-  state$: Observable<TState>
-): SelectorCreator<TState> {
+export default function createSelectorFactory<TState extends object>(): SelectorCreator<
+  TState
+> {
   function selector(...args: any[]) {
     const lastArg = last(args);
     let inputs, projectFn, opts;
@@ -156,12 +156,14 @@ export default function createSelectorFactory<TState extends object>(
       inputs = args.slice(0, args.length - 2);
     }
 
-    const selector$ = combineLatest(...inputs).pipe(
-      sample(state$),
-      map(args => projectFn(...args)),
-      distinctUntilChanged(opts.compare),
-      publishReplay(1),
-      refCount()
+    const selector$ = memoize((state$: Observable<TState>) =>
+      combineLatest(...inputs.map(input => input(state$))).pipe(
+        sample(state$),
+        map(args => projectFn(...args)),
+        distinctUntilChanged(opts.compare),
+        publishReplay(1),
+        refCount()
+      )
     );
 
     return selector$;
