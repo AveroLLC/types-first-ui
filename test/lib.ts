@@ -25,6 +25,7 @@ export enum CounterActionTypes {
   increment = 'COUNTER::INCREMENT',
   decrement = 'COUNTER::DECREMENT',
   incrementEpic = 'COUNTER::INCREMENT_EPIC',
+  identity = 'COUNTER::IDENTITY',
 }
 
 interface CounterActions {
@@ -40,6 +41,10 @@ interface CounterActions {
     type: CounterActionTypes.incrementEpic;
     payload: {};
   };
+  [CounterActionTypes.identity]: {
+    type: CounterActionTypes.identity,
+    payload: {}
+  }
 }
 
 export interface CounterEpicDeps {
@@ -80,12 +85,17 @@ export function makeLib() {
     },
   });
 
+  const identity = redux.action(CounterActionTypes.identity, {
+    reducer: state => state
+  })
+
   const counterLib = redux.createApp({
     initialState: { counter: 0 },
     actions: {
       [CounterActionTypes.increment]: increment,
       [CounterActionTypes.decrement]: decrement,
       [CounterActionTypes.incrementEpic]: incrementEpic,
+      [CounterActionTypes.identity]: identity,
     },
   });
 

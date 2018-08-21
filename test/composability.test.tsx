@@ -75,7 +75,7 @@ class TestComponent extends React.Component<ObservableProps & DispatchProps> {
 describe('composability', () => {
   let ConnectedComponent: React.ComponentClass;
   let middlewareSpy = jest.fn();
-  let { app, counterLib, COUNTER, COUNTER_AS_STRING } = makeApp(middlewareSpy);
+  let { app, counterLib, COUNTER, COUNTER_AS_STRING, state$ } = makeApp(middlewareSpy);
 
   beforeEach(() => {
     renderSpy.mockReset();
@@ -83,6 +83,7 @@ describe('composability', () => {
     const a = makeApp(middlewareSpy);
     const { SUM, NUMBERS, NAME } = a;
     app = a.app;
+    state$ = a.state$;
     counterLib = a.counterLib;
     COUNTER = a.COUNTER;
     COUNTER_AS_STRING = a.COUNTER_AS_STRING;
@@ -205,4 +206,12 @@ describe('composability', () => {
     const props = renderSpy.mock.calls[5][0];
     expect(props.name).toEqual('7734');
   });
+
+  it('should handle case when a reducer returns state referentially equivalent to the currentState', () => {
+    app.dispatch(app.actionCreator(ActionTypes.SET_NAME)({ name: 'ted' }));
+    const beforeState = state$.getValue();
+    app.dispatch(app.actionCreator(CounterActionTypes.identity)({}));
+    const nextState = state$.getValue();
+    expect(beforeState).toBe(nextState)
+  })
 });
