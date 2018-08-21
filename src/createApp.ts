@@ -181,7 +181,7 @@ export class App<
           const currentState = get([subTreeKey])(state);
           const nextState = reducer(currentState, action);
           return nextState === currentState
-            ? currentState
+            ? state
             : set([subTreeKey])(nextState)(state);
         };
       });
