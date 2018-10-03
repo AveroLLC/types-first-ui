@@ -62,7 +62,11 @@ export class Connector<TState extends object, TActions extends Action> {
     const { _state$, _dispatch } = this;
 
     return (
-      component: React.ComponentClass<TObservableProps & TActionProps & TOwnProps>
+      component: React.ComponentClass<
+        TObservableProps & TActionProps extends null
+          ? {}
+          : TActionProps & TOwnProps extends null ? {} : TOwnProps
+      >
     ): React.ComponentClass<TOwnProps> => {
       type ComponentState = TObservableProps & TActionProps;
 
