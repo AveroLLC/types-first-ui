@@ -20,7 +20,7 @@ import * as React from 'react';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import createTypesafeRedux from './typesafeRedux';
-import { BoundActionCreator } from './connector';
+import { ActionCreator } from './implementAction';
 
 Enzyme.configure({ adapter: new Adapter() });
 const { shallow, render, mount } = Enzyme;
@@ -87,7 +87,7 @@ function setup() {
     dev: false,
   });
 
-  type BoundCreator<T extends ActionTypes> = BoundActionCreator<Actions, T>;
+  type Creator<T extends ActionTypes> = ActionCreator<Extract<Actions, { type: T }>>;
 
   interface OwnProps {
     amount?: number;
@@ -99,8 +99,8 @@ function setup() {
   }
 
   interface ActionCreatorProps {
-    increment: BoundCreator<ActionTypes.INCREMENT>;
-    decrement: BoundCreator<ActionTypes.DECREMENT>;
+    increment: Creator<ActionTypes.INCREMENT>;
+    decrement: Creator<ActionTypes.DECREMENT>;
   }
 
   type Props = OwnProps & ObservableProps & ActionCreatorProps;

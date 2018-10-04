@@ -18,14 +18,8 @@ import { isFunction, mapValues } from 'lodash';
 import * as React from 'react';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { map, sample } from 'rxjs/operators';
-import { Action, Arg0, Dispatch } from './types';
+import { Action, Arg0, Dispatch, SanitizeNull } from './types';
 import { comparators } from './utils/comparators';
-import { ActionCreator } from './implementAction';
-
-export type BoundActionCreator<
-  TAllActions extends Action,
-  TActionType extends TAllActions['type']
-> = (payload: Extract<TAllActions, { type: TActionType }>['payload']) => void;
 
 export type ObservableMap<TObservableMap> = {
   [K in keyof TObservableMap]: Observable<any>
@@ -63,14 +57,17 @@ export class Connector<TState extends object, TActions extends Action> {
 
     return (
       component: React.ComponentClass<
-        TObservableProps & TActionProps extends null
-          ? {}
-          : TActionProps & TOwnProps extends null ? {} : TOwnProps
+        SanitizeNull<TObservableProps> &
+          SanitizeNull<TActionProps> &
+          SanitizeNull<TOwnProps>
       >
-    ): React.ComponentClass<TOwnProps> => {
+    ): React.ComponentClass<SanitizeNull<TOwnProps>> => {
       type ComponentState = TObservableProps & TActionProps;
 
-      return class ConnectedComponent extends React.Component<TOwnProps, ComponentState> {
+      return class ConnectedComponent extends React.Component<
+        SanitizeNull<TOwnProps>,
+        ComponentState
+      > {
         // dispatchProps and observablePropValues are passed to render the wrapped component
         // private dispatchProps: TActionProps;
         // private observablePropValues: TObservableProps;

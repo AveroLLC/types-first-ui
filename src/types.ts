@@ -64,3 +64,7 @@ export type SingleActionEpic<
 
 // Utility - infers the type of the first argument of a function
 export type Arg0<T> = T extends (args0: infer R, ...any: any[]) => any ? R : never;
+
+// TODO: this does not feel like good practice. We need to re-evaluate our use of
+// generic default parameters and decide how to leverage the inference engine correctly
+export type SanitizeNull<T> = T extends null ? {} : T;

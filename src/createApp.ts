@@ -27,7 +27,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { pluck } from 'rxjs/operators';
 import { Connector } from './connector';
 import { ActionCreator, ActionImplementation } from './implementAction';
-import { Action, Dispatch, Epic, IReducer, MiddlewareEpic } from './types';
+import { Action, Dispatch, Epic, IReducer, MiddlewareEpic, SanitizeNull } from './types';
 import { get } from './utils/get';
 import { set } from './utils/set';
 
@@ -59,7 +59,7 @@ export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = {
 export type CombinedState<
   TState extends object,
   TFeaturesMap extends FeaturesMap<TFeaturesMap>
-> = TFeaturesMap extends null ? TState : TState & FeaturesMapState<TFeaturesMap>;
+> = TState & SanitizeNull<FeaturesMapState<TFeaturesMap>>;
 
 export type CombinedActions<
   TActions extends Action,
@@ -69,9 +69,7 @@ export type CombinedActions<
 export type CombinedEpicDependencies<
   TEpicDependencies extends object,
   TFeaturesMap extends FeaturesMap<TFeaturesMap>
-> = TFeaturesMap extends null
-  ? TEpicDependencies
-  : TEpicDependencies & FeaturesMapEpicDependencies<TFeaturesMap>;
+> = TEpicDependencies & SanitizeNull<FeaturesMapEpicDependencies<TFeaturesMap>>;
 
 export type ReducerMap<TAllState extends object, TAllActions extends Action> = {
   [K in keyof Partial<TAllActions>]: IReducer<
