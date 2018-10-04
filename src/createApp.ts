@@ -59,15 +59,19 @@ export type FeaturesMapEpicDependencies<T extends FeaturesMap<T>> = {
 export type CombinedState<
   TState extends object,
   TFeaturesMap extends FeaturesMap<TFeaturesMap>
-> = TState & FeaturesMapState<TFeaturesMap>;
+> = TFeaturesMap extends null ? TState : TState & FeaturesMapState<TFeaturesMap>;
+
 export type CombinedActions<
   TActions extends Action,
   TFeaturesMap extends FeaturesMap<TFeaturesMap>
 > = TActions | FeaturesMapActions<TFeaturesMap>;
+
 export type CombinedEpicDependencies<
   TEpicDependencies extends object,
   TFeaturesMap extends FeaturesMap<TFeaturesMap>
-> = TEpicDependencies & FeaturesMapEpicDependencies<TFeaturesMap>;
+> = TFeaturesMap extends null
+  ? TEpicDependencies
+  : TEpicDependencies & FeaturesMapEpicDependencies<TFeaturesMap>;
 
 export type ReducerMap<TAllState extends object, TAllActions extends Action> = {
   [K in keyof Partial<TAllActions>]: IReducer<
@@ -180,9 +184,7 @@ export class App<
         return (state, action) => {
           const currentState = get([subTreeKey])(state);
           const nextState = reducer(currentState, action);
-          return nextState === currentState
-            ? state
-            : set([subTreeKey])(nextState)(state);
+          return nextState === currentState ? state : set([subTreeKey])(nextState)(state);
         };
       });
       reducers = Object.assign({}, reducers, featureReducers);

@@ -103,9 +103,15 @@ describe('app testability', () => {
     it('should allow testing of epics', () => {
       const { epic, creator } = addNumber;
 
-      const emittedAction = epic(of(creator({ number: 10 })), {
-        getValue: () => 7,
-      });
+      const emittedAction = epic(
+        of(creator({ number: 10 })),
+        {
+          lib: {
+            getValue: () => 7,
+          },
+        },
+        null
+      );
 
       return expect(emittedAction.toPromise()).resolves.toEqual({
         type: CounterActionTypes.increment,

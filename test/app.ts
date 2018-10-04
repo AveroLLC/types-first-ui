@@ -68,7 +68,7 @@ export function makeApp(middlewareSpy: () => void) {
     lib: typeof counterLib;
   }
 
-  const redux = createTypesafeRedux<AppState, Actions[keyof Actions], null, Features>({
+  const redux = createTypesafeRedux<AppState, Actions[keyof Actions], {}, Features>({
     lib: counterLib,
   });
 
