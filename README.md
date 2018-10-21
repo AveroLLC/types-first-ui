@@ -121,7 +121,7 @@ export const doubleCounter = selector(Paths.counter, counter => {
 
 We now use the utility functions from `createTypesafeRedux` to create our [Paths](#path) and [Selectors](#selector). Generically, these represent observables of derived values from your state tree. Specifically, Paths are a directly referenceable property on your state tree; Selectors are derived values that are computed as a function of input Paths and Selectors.
 
-Additionally, Paths include utility get & set functions that will be used in your reducers.
+Additionally, Paths include utility get, set, & unset functions that will be used in your reducers.
 
 ```typescript
 import { flow } from 'types-first-ui';
@@ -302,14 +302,15 @@ export const todoById = (id: string) => selector(Paths.TODOS, todos => todos[id]
 export interface PathAPI<TState extends object, TVal> {
   get: (state: TState) => TVal;
   set: (nextVal: TVal) => (state: TState) => TState;
+  unset: (state: TState) => TState;
 }
 export declare type Path<TState extends object, TVal> = Selector<TVal> &
   PathAPI<TState, TVal>;
 ```
 
-A path is a selector with special properties and constraints. Paths represent observables of some subtree of your state atom. A path is constructed by providing the literal path to a subtree of your state interface. It will emit whenever that piece of the state tree has changed (i.e. it is no longer referentially equal to its previous value). Paths are the primitive from which we compute other derived values, through selectors. For every subtree of your state tree, there should be a corresponding Paths object.
+A path is a selector with special properties and constraints. Paths represent observables of some subtree of your state atom. A path is constructed by providing the literal path to a subtree of your state interface. It is an observable that will emit whenever the focused piece of the state tree has changed (i.e. it is no longer referentially equal to its previous value). Paths are the primitive from which we compute other derived values, through selectors. For every subtree of your state tree, there should be a corresponding Paths object.
 
-Because paths are bound directly to a piece of the state tree, they also include typesafe, non-mutating get and set functions which are used in our reducers.
+Because paths are bound directly to a piece of the state tree, they also include typesafe, non-mutating get, set, and unset functions which are used in our reducers.
 
 Paths are created using the `path` utility function.
 
@@ -327,9 +328,9 @@ interface State {
 
 export const Paths = {
   COUNTER: path(['app', 'counter'], 0), // optional default argument,
-  // Paths.COUNTER is type Observable<number> & { get: (State) => number, set: (number) => StateTransform<State> }
+  // Paths.COUNTER is type Observable<number> & { get: (State) => number, set: (number) => StateTransform<State>, unset: StateTransform<State> }
   USERNAME: path(['app', 'username'], ''),
-  // Paths.USERNAME is type Observable<string> & { get: (State) => string, set: (string) => StateTransform<State> }
+  // Paths.USERNAME is type Observable<string> & { get: (State) => string, set: (string) => StateTransform<State> , unset: StateTransform<State>}
   BAD: path(['app', 'badPath']),
   // ERROR: argument of 'badPath' is not assignable to 'counter' | 'username'
 };

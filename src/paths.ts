@@ -20,12 +20,14 @@ import { Selector } from './selectors';
 import { StateTransform } from './types';
 import { get } from './utils/get';
 import { set } from './utils/set';
+import { unset } from './utils/unset';
 
 // A path is a selector that additionally has utility functions to to immutably get & reassign values
 // on the state tree
 export interface PathAPI<TState extends object, TVal> {
   get: (state: TState) => TVal;
   set: (nextVal: TVal) => StateTransform<TState>;
+  unset: StateTransform<TState>;
 }
 export type Path<TState extends object, TVal> = Selector<TVal> & PathAPI<TState, TVal>;
 
@@ -151,6 +153,7 @@ export default function createPathFactory<TState extends object>(
   const path = (keys: any, defaultVal: any) => {
     const _get = get(keys, defaultVal);
     const _set = set(keys);
+    const _unset = unset(keys);
     const obs$ = state$.pipe(
       map(_get),
       distinctUntilChanged(),
@@ -161,6 +164,7 @@ export default function createPathFactory<TState extends object>(
     return Object.assign(obs$, {
       get: _get,
       set: _set,
+      unset: _unset,
     });
   };
 

@@ -105,24 +105,56 @@ describe('paths', () => {
 
     it('should return a new object reference', () => {
       const nextState = COUNTER.set(2)(state);
-      expect(nextState).not.toEqual(state);
+      expect(nextState).not.toBe(state);
     });
 
     it('should maintain referential equality for parts of the subtree not affected', () => {
       const nextState = COUNTER.set(2)(state);
-      expect(nextState.a).toEqual(state.a);
+      expect(nextState.a).toBe(state.a);
     });
 
     it('should cascade reference changes', () => {
       const nextState = NESTED.set('hi')(state);
-      expect(nextState.a).not.toEqual(state.a);
-      expect(nextState.a.b).not.toEqual(state.a.b);
-      expect(nextState.a.b.c).not.toEqual(state.a.b.c);
-      expect(nextState.a.b.c.string).not.toEqual(state.a.b.c.string);
-      expect(nextState.a.b.c.string).toEqual('hi');
-      expect(nextState.a.b.c.number).toEqual(state.a.b.c.number);
+      expect(nextState.a).not.toBe(state.a);
+      expect(nextState.a.b).not.toBe(state.a.b);
+      expect(nextState.a.b.c).not.toBe(state.a.b.c);
+      expect(nextState.a.b.c.string).not.toBe(state.a.b.c.string);
+      expect(nextState.a.b.c.string).toBe('hi');
+      expect(nextState.a.b.c.number).toBe(state.a.b.c.number);
     });
   });
+
+  describe('#unset', () => {
+    it('should remove the targetted value', () => {
+      const nextState = COUNTER.unset(state);
+      expect(nextState.counter).toBeUndefined();
+    });
+  
+    it('should not mutate the original state', () => {
+      const nextState = COUNTER.unset(state);
+      expect(state.counter).toEqual(0);
+    });
+  
+    it('should return a new object reference', () => {
+      const nextState = COUNTER.unset(state);
+      expect(nextState).not.toBe(state);
+    });
+  
+    it('should maintain referential equality for parts of the subtree not affected', () => {
+      const nextState = COUNTER.unset(state);
+      expect(nextState.a).toBe(state.a);
+    });
+  
+    it('should cascade reference changes', () => {
+      const nextState = NESTED.unset(state);
+  
+      expect(nextState.a).not.toBe(state.a);
+      expect(nextState.a.b).not.toBe(state.a.b);
+      expect(nextState.a.b.c).not.toBe(state.a.b.c);
+      expect(nextState.a.b.c.string).not.toBe(state.a.b.c.string);
+      expect(nextState.a.b.c.string).toBeUndefined();
+      expect(nextState.a.b.c.number).toBe(state.a.b.c.number);
+    });
 
   describe('observable', () => {
     it('should be an observable', () => {
