@@ -395,6 +395,8 @@ declare namespace fp {
     set(path: string): <T, U>(value: U, object: T) => T;
     set(path: string): <U>(value: U) => <T>(object: T) => T;
 
+    unset<TResult>(path: string): (object: any) => TResult;
+
     /**
      * This method invokes interceptor and returns value. The interceptor is bound to thisArg and invoked with one
      * argument; (value). The purpose of this method is to "tap into" a method chain in order to perform operations
