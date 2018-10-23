@@ -73,7 +73,7 @@ class TestComponent extends React.Component<ObservableProps & DispatchProps> {
 }
 
 describe('composability', () => {
-  let ConnectedComponent: React.ComponentClass;
+  let ConnectedComponent: React.ComponentType;
   let middlewareSpy = jest.fn();
   let { app, counterLib, COUNTER, COUNTER_AS_STRING, state$ } = makeApp(middlewareSpy);
 
@@ -212,6 +212,6 @@ describe('composability', () => {
     const beforeState = state$.getValue();
     app.dispatch(app.actionCreator(CounterActionTypes.identity)({}));
     const nextState = state$.getValue();
-    expect(beforeState).toBe(nextState)
-  })
+    expect(beforeState).toBe(nextState);
+  });
 });

@@ -56,12 +56,12 @@ export class Connector<TState extends object, TActions extends Action> {
     const { _state$, _dispatch } = this;
 
     return (
-      component: React.ComponentClass<
+      component: React.ComponentType<
         SanitizeNull<TObservableProps> &
           SanitizeNull<TActionProps> &
           SanitizeNull<TOwnProps>
       >
-    ): React.ComponentClass<SanitizeNull<TOwnProps>> => {
+    ): React.ComponentType<SanitizeNull<TOwnProps>> => {
       type ComponentState = TObservableProps & TActionProps;
 
       return class ConnectedComponent extends React.Component<
