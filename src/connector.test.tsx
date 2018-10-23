@@ -47,6 +47,24 @@ interface ActionsMap {
 
 type Actions = ActionsMap[keyof ActionsMap];
 
+interface OwnProps {
+  amount?: number;
+}
+
+interface ObservableProps {
+  counter: number;
+  counterPlusAmount: number;
+}
+
+type Creator<T extends ActionTypes> = ActionCreator<Extract<Actions, { type: T }>>;
+
+interface ActionCreatorProps {
+  increment: Creator<ActionTypes.INCREMENT>;
+  decrement: Creator<ActionTypes.DECREMENT>;
+}
+
+type Props = OwnProps & ObservableProps & ActionCreatorProps;
+
 function setup() {
   const { action, createApp, selector, path } = createTypesafeRedux<
     State,
@@ -87,24 +105,6 @@ function setup() {
     dev: false,
   });
 
-  type Creator<T extends ActionTypes> = ActionCreator<Extract<Actions, { type: T }>>;
-
-  interface OwnProps {
-    amount?: number;
-  }
-
-  interface ObservableProps {
-    counter: number;
-    counterPlusAmount: number;
-  }
-
-  interface ActionCreatorProps {
-    increment: Creator<ActionTypes.INCREMENT>;
-    decrement: Creator<ActionTypes.DECREMENT>;
-  }
-
-  type Props = OwnProps & ObservableProps & ActionCreatorProps;
-
   const renderSpy = jest.fn();
 
   class TestComponent extends React.Component<Props> {
@@ -136,25 +136,6 @@ function setup() {
     PATHS,
   };
 }
-
-/**
- * Connector tests:
- * X Component initially renders with the correct values for observable props
- * X When an observable prop emits, component is re-rendered
- * X When an observable prop emits, component is gets the correct value
- * X It subscribes to observable props on mount
- * X It unsubscribes when unmounted
- * - If obs props factory:
- *  X It unsubs & resubs when ownprops change
- * - If OTHER props change
- *  X It keeps same subs as props change
- * - If action creator factory:
- *  - It unsubs & resubs when ownprops change
- * - If OTHER props change
- *  - It keeps same subs as props change
- * X When action creator props are called, the correct action is dispatched
-
- */
 
 describe('connector', () => {
   let { TestComponent, renderSpy, app, actionImplementations, PATHS } = setup();
@@ -444,6 +425,44 @@ describe('connector', () => {
 
         component.unmount();
         expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('sfc', () => {
+    it('should work correctly with an SFC', () => {
+      const component = jest.fn(props => {
+        return (
+          <div>
+            <div id="counter">{props.counter}</div>
+          </div>
+        );
+      });
+
+      const observablePropsFactory = ownProps => ({
+        counter: PATHS.COUNTER,
+        counterPlusAmount: PATHS.COUNTER.pipe(map(val => val + (ownProps.amount || 0))),
+      });
+
+      const actionProps = {
+        increment: app.actionCreator(ActionTypes.INCREMENT),
+        decrement: app.actionCreator(ActionTypes.DECREMENT),
+      };
+      const ConnectedComponent = app.connect<
+        ObservableProps,
+        ActionCreatorProps,
+        OwnProps
+      >(
+        observablePropsFactory,
+        actionProps
+      )(component);
+
+      mount(<ConnectedComponent amount={10} />);
+      expect(component).toHaveBeenCalledTimes(1);
+      const props = component.mock.calls[0][0];
+      expect(props).toMatchObject({
+        counter: 0,
+        counterPlusAmount: 10,
       });
     });
   });
