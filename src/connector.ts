@@ -16,8 +16,8 @@
 
 import { isFunction, mapValues } from 'lodash';
 import * as React from 'react';
-import { Observable, Subscription, combineLatest } from 'rxjs';
-import { map, sample } from 'rxjs/operators';
+import { Observable, Subscription, combineLatest, of } from 'rxjs';
+import { map, sample, catchError } from 'rxjs/operators';
 import { Action, Arg0, Dispatch, SanitizeNull } from './types';
 import { comparators } from './utils/comparators';
 
@@ -142,7 +142,18 @@ export class Connector<TState extends object, TActions extends Action> {
           this.observablePropSubscription = combineLatest(
             ...keys.map(key => {
               const obs$ = observableProps[key];
-              return obs$.pipe(map(value => ({ [key]: value })));
+              return obs$.pipe(
+                catchError(err => {
+                  console.error(
+                    `Error evaluating observable property '${key}' of component '${
+                      component.name
+                    }':\n\n`,
+                    err
+                  );
+                  return of(undefined);
+                }),
+                map(value => ({ [key]: value }))
+              );
             })
           )
             .pipe(
