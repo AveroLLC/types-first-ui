@@ -104,8 +104,6 @@ export class Connector<TState extends object, TActions extends Action> {
           const obsIsFactory = isFunction(observablePropsFactory);
           if (obsIsFactory) {
             this.subscribeObservableProps(this.createObservableProps(nextProps));
-          }
-          if (obsIsFactory) {
             return false;
           }
 
