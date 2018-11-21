@@ -14,21 +14,10 @@
    limitations under the License.
  */
 
-import { ofType } from '../src';
-import { createTypesafeRedux } from '../src';
-
-import { CounterActionTypes, makeLib } from './lib';
-import {
-  map,
-  mapTo,
-  flatMap,
-  tap,
-  takeUntil,
-  toArray,
-  sample,
-  buffer,
-} from 'rxjs/operators';
 import { never } from 'rxjs';
+import { buffer, flatMap, map, mapTo, tap } from 'rxjs/operators';
+import { createTypesafeRedux, ofType } from '../src';
+import { CounterActionTypes, makeLib } from './lib';
 
 export interface AppState {
   name: string;

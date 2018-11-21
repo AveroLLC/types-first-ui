@@ -1,6 +1,6 @@
 {
   "name": "types-first-ui",
-  "version": "2.3.1",
+  "version": "2.3.2-alpha.0",
   "description": "An opinionated framework for building long-lived, maintainable UI codebases",
   "main": "./dist/bundle.js",
   "types": "./dist/index.d.ts",

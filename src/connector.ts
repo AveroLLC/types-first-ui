@@ -155,7 +155,7 @@ export class Connector<TState extends object, TActions extends Action> {
             })
           )
             .pipe(
-              sample(_state$),
+              // sample(_state$),
               map(changes => Object.assign({}, ...changes))
             )
             .subscribe(nextState => {
