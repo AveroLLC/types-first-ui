@@ -182,7 +182,7 @@ describe('operators', () => {
     });
   });
 
-  describe.only('memoize', () => {
+  describe('memoize', () => {
     let memoized: MemoizedSelector<[string], string>;
 
     beforeEach(() => {

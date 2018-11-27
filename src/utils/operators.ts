@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { combineLatest, EMPTY, Observable, OperatorFunction } from 'rxjs';
+import { combineLatest, EMPTY, Observable, OperatorFunction, pipe } from 'rxjs';
 import {
   debounce,
   distinctUntilChanged,
@@ -31,13 +31,11 @@ export function latestBatched<T extends InferredTuple<Observable<any>>>(
 }
 
 export function reuse<T>(): OperatorFunction<T, T> {
-  return src => {
-    return src.pipe(
-      distinctUntilChanged(),
-      publishReplay(1),
-      refCount()
-    );
-  };
+  return pipe(
+    distinctUntilChanged(),
+    publishReplay(1),
+    refCount()
+  );
 }
 
 export function selector<T extends InferredTuple<Observable<any>>, R>(
